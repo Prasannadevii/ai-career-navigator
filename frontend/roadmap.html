@@ -297,43 +297,110 @@ function rRes(r){
 function rTopic(topic, roadmapId, phaseTitle, weekTitle){
   const tid  = topic._id;
   const done = topic.completed;
-  const objs = (topic.learningObjectives||[]).map(o=>`<li>${o}</li>`).join('');
-  const ress = (topic.resources||[]).filter(r=>r.title).map(rRes).join('');
-  const exs  = (topic.exercises||[]).map(e=>`<div style="font-size:.78rem;color:var(--text-muted);padding:.2rem 0">🛠 ${e}</div>`).join('');
 
-  const ctxQ = encodeURIComponent(`I'm studying "${topic.title}" (${weekTitle}, ${phaseTitle}). Can you explain this and give me practical examples?`);
-  const jPrm = ctxJourneyId ? `&journeyId=${ctxJourneyId}` : '';
+  const objs = (topic.learningObjectives || [])
+    .map(o => `<li>${o}</li>`)
+    .join('');
+
+  const ress = (topic.resources || [])
+    .filter(r => r.title)
+    .map(rRes)
+    .join('');
+
+  const exs = (topic.exercises || [])
+    .map(e => `<div style="font-size:.78rem;color:var(--text-muted);padding:.2rem 0">🛠 ${e}</div>`)
+    .join('');
 
   const hasDetail = objs || ress || exs || topic.description;
 
+  /*
+   * IMPORTANT:
+   * Do NOT put the AI-generated topic text directly inside onclick="..."
+   * because quotes/apostrophes in AI text can break JavaScript.
+   *
+   * We encode the values and store them in data attributes instead.
+   */
+  const aiTopic = encodeURIComponent(topic.title || '');
+  const aiWeek  = encodeURIComponent(weekTitle || '');
+  const aiPhase = encodeURIComponent(phaseTitle || '');
+
   return `
-    <div class="check-row ${done?'row-done':''}" id="tr-${tid}">
-      <div class="cb ${done?'checked':''}" id="cb-${tid}"
+    <div class="check-row ${done ? 'row-done' : ''}" id="tr-${tid}">
+
+      <div class="cb ${done ? 'checked' : ''}" id="cb-${tid}"
            onclick="event.stopPropagation();doCompleteTopic('${roadmapId}','${tid}',${done})"
-           title="${done?'Mark incomplete':'Mark complete'}">
-        ${done?'✓':''}
+           title="${done ? 'Mark incomplete' : 'Mark complete'}">
+        ${done ? '✓' : ''}
       </div>
+
       <div class="row-content">
-        <div class="row-title ${done?'done-text':''}" id="rt-${tid}">${topic.topicNumber||''}. ${topic.title}</div>
-        <div class="row-badges">
-          ${topic.difficulty?diffBadge(topic.difficulty):''}
-          ${topic.estimatedHours?`<span style="font-size:.68rem;color:var(--text-dim)">⏱ ~${topic.estimatedHours}h</span>`:''}
+
+        <div class="row-title ${done ? 'done-text' : ''}" id="rt-${tid}">
+          ${topic.topicNumber || ''}. ${topic.title}
         </div>
-        ${hasDetail?`
+
+        <div class="row-badges">
+          ${topic.difficulty ? diffBadge(topic.difficulty) : ''}
+          ${topic.estimatedHours
+            ? `<span style="font-size:.68rem;color:var(--text-dim)">⏱ ~${topic.estimatedHours}h</span>`
+            : ''}
+        </div>
+
+        ${hasDetail ? `
           <div class="topic-detail" id="td-${tid}">
-            ${topic.description?`<div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem;line-height:1.6">${topic.description}</div>`:''}
-            ${objs?`<ul class="obj-list">${objs}</ul>`:''}
-            ${ress?`<div style="margin-bottom:.5rem"><div class="section-label" style="margin-top:0">📚 Resources</div>${ress}</div>`:''}
-            ${exs?`<div style="margin-bottom:.5rem"><div class="section-label" style="margin-top:0">🛠 Hints</div>${exs}</div>`:''}
-            <button class="ask-ai-btn" onclick="askAI('${ctxQ}${jPrm}')">🤖 Ask AI about this topic</button>
+
+            ${topic.description
+              ? `<div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem;line-height:1.6">${topic.description}</div>`
+              : ''}
+
+            ${objs
+              ? `<ul class="obj-list">${objs}</ul>`
+              : ''}
+
+            ${ress
+              ? `<div style="margin-bottom:.5rem">
+                   <div class="section-label" style="margin-top:0">📚 Resources</div>
+                   ${ress}
+                 </div>`
+              : ''}
+
+            ${exs
+              ? `<div style="margin-bottom:.5rem">
+                   <div class="section-label" style="margin-top:0">🛠 Hints</div>
+                   ${exs}
+                 </div>`
+              : ''}
+
+            <button
+              class="ask-ai-btn"
+              data-ai-topic="${aiTopic}"
+              data-ai-week="${aiWeek}"
+              data-ai-phase="${aiPhase}"
+              onclick="event.stopPropagation();askAIFromTopic(this)">
+              🤖 Ask AI about this topic
+            </button>
+
           </div>
-          <button class="topic-expand" id="te-${tid}" onclick="event.stopPropagation();toggleTopic('${tid}')">▾ Details</button>
-        `:''}
+
+          <button
+            class="topic-expand"
+            id="te-${tid}"
+            onclick="event.stopPropagation();toggleTopic('${tid}')">
+            ▾ Details
+          </button>
+        ` : ''}
+
       </div>
-      <div class="cb ${done?'checked':''}" style="visibility:hidden" aria-hidden="true"></div>
+
+      <div class="cb ${done ? 'checked' : ''}"
+           style="visibility:hidden"
+           aria-hidden="true">
+      </div>
+
     </div>`;
 }
 
+// ── Render one topic row ──────────────────────────────────────────────────────
 // ── Render one exercise row ───────────────────────────────────────────────────
 function rExercise(ex, roadmapId){
   const eid  = ex._id;
@@ -690,8 +757,26 @@ async function doCompleteExercise(roadmapId, exId, curDone){
 }
 
 // ── Ask AI ────────────────────────────────────────────────────────────────────
-function askAI(ctxQ){
-  window.location.href = `/mentor.html?${ctxQ}`;
+// ── Ask AI about a specific roadmap topic ────────────────────────────────────
+function askAIFromTopic(button){
+
+  const topic = decodeURIComponent(button.dataset.aiTopic || '');
+  const week  = decodeURIComponent(button.dataset.aiWeek || '');
+  const phase = decodeURIComponent(button.dataset.aiPhase || '');
+
+  const question =
+    `I'm studying "${topic}" in Week ${week}, Phase ${phase}. ` +
+    `Can you explain this topic clearly and give me practical examples?`;
+
+  const params = new URLSearchParams();
+
+  params.set('q', question);
+
+  if (ctxJourneyId) {
+    params.set('journeyId', ctxJourneyId);
+  }
+
+  window.location.href = `/mentor.html?${params.toString()}`;
 }
 
 // ── Legacy phase slider ───────────────────────────────────────────────────────
