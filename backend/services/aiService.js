@@ -641,6 +641,156 @@ return message;
   );
 }
 
+// ============================================================
+// MENTOR OUTPUT SANITIZER
+// ============================================================
+
+function sanitizeMentorOutput(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  let output = text;
+
+  // ------------------------------------------------------------
+  // 1. Normalize line endings
+  // ------------------------------------------------------------
+  output = output.replace(/\r\n/g, '\n');
+  output = output.replace(/\r/g, '\n');
+
+  // ------------------------------------------------------------
+  // 2. Convert unsupported deep headings
+  //    Mentor frontend supports ## and ### headings.
+  // ------------------------------------------------------------
+  output = output.replace(
+    /^\s*####+\s*/gm,
+    '### '
+  );
+
+  // ------------------------------------------------------------
+  // 3. Remove emoji/keycap characters from the beginning
+  //    of headings so the markdown renderer can recognize them.
+  // ------------------------------------------------------------
+  output = output.replace(
+    /^(#{2,3})\s*(?:🎯|📚|💡|🧠|🚀|🛠️|🔧|📌|✅|⭐|🔥|💻|📖|🎓|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣|8️⃣|9️⃣|🔟)\s*/gm,
+    '$1 '
+  );
+
+  // ------------------------------------------------------------
+  // 4. Normalize markdown tables.
+  //
+  // The Mentor UI expects:
+  //
+  // | Header | Header |
+  // |--------|--------|
+  // | Data   | Data   |
+  //
+  // not blank lines between rows.
+  // ------------------------------------------------------------
+  const lines = output.split('\n');
+  const cleanedLines = [];
+
+  let insideTable = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    const isTableRow =
+      /^\s*\|.*\|\s*$/.test(line);
+
+    if (isTableRow) {
+      insideTable = true;
+      cleanedLines.push(line.trim());
+      continue;
+    }
+
+    if (
+      insideTable &&
+      line.trim() === ''
+    ) {
+      const nextLine = lines[i + 1] || '';
+
+      if (/^\s*\|.*\|\s*$/.test(nextLine)) {
+        continue;
+      }
+
+      insideTable = false;
+    }
+
+    cleanedLines.push(line);
+  }
+
+  output = cleanedLines.join('\n');
+
+  // ------------------------------------------------------------
+  // 5. Convert vertical flow diagrams to a single-line flow.
+  //
+  // Example:
+  //
+  // Client
+  // ↓
+  // Server
+  // ↓
+  // Database
+  //
+  // becomes:
+  //
+  // Client → Server → Database
+  // ------------------------------------------------------------
+  const flowLines = output.split('\n');
+  const finalLines = [];
+
+  for (let i = 0; i < flowLines.length; i++) {
+    const current = flowLines[i].trim();
+
+    if (
+      current === '↓' ||
+      current === '⬇' ||
+      current === '▼'
+    ) {
+      if (
+        finalLines.length > 0 &&
+        i + 1 < flowLines.length
+      ) {
+        const previous =
+          finalLines[finalLines.length - 1].trim();
+
+        const next =
+          flowLines[i + 1].trim();
+
+        if (
+          previous &&
+          next &&
+          !previous.startsWith('#') &&
+          !next.startsWith('#') &&
+          !previous.startsWith('|') &&
+          !next.startsWith('|')
+        ) {
+          finalLines[
+            finalLines.length - 1
+          ] = `${previous} → ${next}`;
+
+          i++;
+          continue;
+        }
+      }
+    }
+
+    finalLines.push(flowLines[i]);
+  }
+
+  output = finalLines.join('\n');
+
+  // ------------------------------------------------------------
+  // 6. Clean excessive blank lines.
+  // ------------------------------------------------------------
+  output = output.replace(
+    /\n{4,}/g,
+    '\n\n\n'
+  );
+
+  return output.trim();
+}
 
 // ============================================================
 // PRIMARY AI DISPATCH
@@ -697,229 +847,270 @@ async function callAI(
 // ROADMAP GENERATION
 // ============================================================
 
-async function generateRoadmap(
-  context
-) {
+async function generateRoadmap(context) {
+  const { career, skillScores, skillGaps, userName, selectedSkills } = context;
 
-  const {
-    career,
-    skillScores,
-    skillGaps,
-    userName
-  } = context;
+  const gapSummary = skillGaps
+    .filter(g => g.gap > 0)
+    .sort((a, b) => b.gap - a.gap)
+    .map(g => `${g.skillName}: gap=${g.gap} (current=${g.currentLevel}%, required=${g.requiredLevel}%)`)
+    .join('\n');
 
-  const systemPrompt = `
-You are an expert career coach and learning path designer.
+  const scoreSummary = skillScores
+    .map(s => `${s.skillName}: ${s.score}% (${s.proficiency})`)
+    .join('\n');
 
-Generate a structured, personalized learning roadmap in valid JSON format only.
+  const existingSkillsStr = selectedSkills && selectedSkills.length > 0
+    ? selectedSkills.join(', ')
+    : 'Not specified';
 
-Do not include any text outside the JSON object.
+  const systemPrompt = `You are an expert curriculum designer creating personalized, comprehensive career learning roadmaps.
 
-The JSON must be parseable by JSON.parse().
-`;
+Output ONLY valid JSON. No markdown fences, no text outside the JSON object. The response must start with { and end with }.`;
 
-  const gapSummary =
-    skillGaps
-      .filter(
-        g => g.gap > 0
-      )
-      .sort(
-        (a, b) =>
-          b.gap - a.gap
-      )
-      .map(
-        g =>
-          `${g.skillName}: gap=${g.gap} (current=${g.currentLevel}, required=${g.requiredLevel})`
-      )
-      .join('\n');
+  const userMessage = `Create a detailed, comprehensive, personalized learning roadmap for ${userName}.
 
-  const scoreSummary =
-    skillScores
-      .map(
-        s =>
-          `${s.skillName}: ${s.score}% (${s.proficiency})`
-      )
-      .join('\n');
+Target Career: ${career}
 
-  const userMessage = `
-Create a personalized learning roadmap for ${userName}.
+Learner's Existing Skills: ${existingSkillsStr}
 
-Target Career:
-${career}
-
-Current Skill Levels:
+Current Skill Assessment:
 ${scoreSummary}
 
-Skill Gaps:
-${gapSummary}
+Skill Gaps to Address (highest priority first):
+${gapSummary || 'No major gaps — focus on mastery and projects.'}
 
-Return ONLY a JSON object with this exact structure:
+INSTRUCTIONS:
+1. Create 5-8 phases that cover everything needed for ${career}
+2. Each phase has multiple weeks (typically 2-5 weeks per phase)
+3. Each week has 6-12 specific topics to learn
+4. Build logically from foundations to advanced topics
+5. Use the skill gaps to prioritize what needs most focus
+6. Existing skills can be acknowledged but don't dwell on them — fill the GAPS
+7. Every topic must have: a title, description, difficulty, estimatedHours, learningObjectives (2-4), resources (2-3 with real URLs), exercises (1-2)
+8. Resources MUST use real, known URLs — only use these trusted domains:
+   - docs.python.org, numpy.org/doc, pandas.pydata.org, scikit-learn.org
+   - developer.mozilla.org, nodejs.org, reactjs.org, vuejs.org
+   - docs.docker.com, kubernetes.io/docs, cloud.google.com/docs
+   - aws.amazon.com/getting-started, learn.microsoft.com/azure
+   - freecodecamp.org, kaggle.com/learn, coursera.org, fast.ai
+   - github.com (only well-known repos), git-scm.com/doc
+   - tensorflow.org, pytorch.org, huggingface.co/docs
+   - leetcode.com, hackerrank.com, exercism.org
+   - www.w3schools.com, javascript.info, learnpython.org
+
+Return this exact JSON structure:
 
 {
-  "summary": "Brief 1-2 sentence personalized overview",
+  "summary": "2-3 sentence personalized overview of this roadmap",
   "totalDuration": "X weeks",
   "phases": [
     {
       "phaseNumber": 1,
       "title": "Phase title",
+      "description": "What this phase covers and why",
       "duration": "X weeks",
       "skills": ["skill1", "skill2"],
-      "topics": ["topic1", "topic2", "topic3"],
-      "reason": "Why this phase comes first based on the user's gaps",
-      "practicalExercises": ["exercise1", "exercise2"],
-      "resources": ["resource1", "resource2"]
+      "reason": "Why this phase is needed based on the learner's gaps",
+      "weeks": [
+        {
+          "weekNumber": 1,
+          "title": "Week title",
+          "description": "What this week covers",
+          "estimatedHours": 10,
+          "practiceProject": "One sentence describing a mini-project for this week",
+          "exercises": [
+            {
+              "exerciseNumber": 1,
+              "title": "Exercise title (e.g. Build a calculator)",
+              "description": "What to build or do, with clear deliverable",
+              "difficulty": "Beginner"
+            },
+            {
+              "exerciseNumber": 2,
+              "title": "Another exercise title",
+              "description": "Description of what to build or do",
+              "difficulty": "Intermediate"
+            }
+          ],
+          "topics": [
+            {
+              "topicNumber": 1,
+              "title": "Topic title",
+              "description": "What this topic is and why it matters",
+              "difficulty": "Beginner",
+              "estimatedHours": 1.5,
+              "learningObjectives": ["objective 1", "objective 2", "objective 3"],
+              "resources": [
+                {
+                  "title": "Resource name",
+                  "url": "https://actual-real-url.com/path",
+                  "type": "documentation",
+                  "platform": "Platform name",
+                  "isFree": true,
+                  "description": "What this resource teaches"
+                }
+              ],
+              "exercises": ["Brief exercise hint for this specific topic"]
+            }
+          ]
+        }
+      ]
     }
   ]
 }
 
-Rules:
-
-- Only include phases for skills with gaps > 0
-- Order phases by gap severity
-- Each phase should have 3-6 topics
-- Include 2-3 practical exercises per phase
-- Suggest free resources such as MDN, official documentation, freeCodeCamp, etc.
-- Maximum 6 phases
-`;
+IMPORTANT RULES:
+- difficulty must be exactly: "Beginner", "Intermediate", or "Advanced"
+- type must be one of: "documentation", "course", "tutorial", "video", "practice", "book", "github", "other"
+- All URLs must be real and functional — no placeholders like "example.com"
+- Provide at least 6 topics per week (aim for 8-10 for important weeks)
+- Provide 2-4 week-level exercises per week (these are the main practice projects)
+- Topic-level exercises are brief hints (plain strings), week-level exercises are structured objects
+- The roadmap should be comprehensive enough to genuinely prepare someone for ${career}
+- Return ONLY the JSON object, nothing else`;
 
   try {
+    const raw = await callAI(systemPrompt, userMessage, 8000, true);
 
-    const raw =
-      await callAI(
-        systemPrompt,
-        userMessage,
-        4000,
-        true
-      );
+    let jsonStr = raw.trim();
 
-    let jsonStr =
-      raw.trim();
+    // Strip markdown fences if present
+    const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) jsonStr = fenceMatch[1].trim();
 
-    const fenceMatch =
-      jsonStr.match(
-        /```(?:json)?\s*([\s\S]*?)```/
-      );
-
-    if (fenceMatch) {
-      jsonStr =
-        fenceMatch[1].trim();
+    // Strip any leading/trailing non-JSON text
+    const firstBrace = jsonStr.indexOf('{');
+    const lastBrace  = jsonStr.lastIndexOf('}');
+    if (firstBrace > 0 || lastBrace < jsonStr.length - 1) {
+      jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
     }
 
-    const parsed =
-      JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr);
 
-    if (
-      !parsed.phases ||
-      !Array.isArray(
-        parsed.phases
-      )
-    ) {
-      throw new Error(
-        'Invalid roadmap structure: missing phases array'
-      );
+    if (!parsed.phases || !Array.isArray(parsed.phases) || parsed.phases.length === 0) {
+      throw new Error('Invalid roadmap structure: missing phases array');
     }
 
-    return {
-      success: true,
-      data: parsed
-    };
+    // Validate and sanitize resources — remove any with fake/placeholder URLs
+    const KNOWN_SAFE_DOMAINS = [
+      'docs.python.org','numpy.org','pandas.pydata.org','scikit-learn.org',
+      'developer.mozilla.org','nodejs.org','reactjs.org','vuejs.org',
+      'docs.docker.com','kubernetes.io','cloud.google.com','aws.amazon.com',
+      'learn.microsoft.com','freecodecamp.org','kaggle.com','coursera.org',
+      'fast.ai','github.com','git-scm.com','tensorflow.org','pytorch.org',
+      'huggingface.co','leetcode.com','hackerrank.com','exercism.org',
+      'w3schools.com','javascript.info','learnpython.org','realpython.com',
+      'flask.palletsprojects.com','fastapi.tiangolo.com','docs.djangoproject.com',
+      'postgresql.org','mongodb.com','redis.io','graphql.org','swagger.io',
+      'docker.com','openai.com','anthropic.com','deeplearning.ai'
+    ];
+
+    function isValidUrl(url) {
+      if (!url || typeof url !== 'string') return false;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) return false;
+      try {
+        const u = new URL(url);
+        const host = u.hostname.replace(/^www\./, '');
+        return KNOWN_SAFE_DOMAINS.some(d => host === d || host.endsWith('.' + d));
+      } catch { return false; }
+    }
+
+    function sanitizeResources(resources) {
+      if (!Array.isArray(resources)) return [];
+      return resources
+        .filter(r => r && r.title)
+        .map(r => ({
+          title:       r.title       || '',
+          url:         isValidUrl(r.url) ? r.url : '',
+          type:        ['documentation','course','tutorial','video','practice','book','github','other'].includes(r.type) ? r.type : 'other',
+          platform:    r.platform    || '',
+          isFree:      r.isFree !== false,
+          description: r.description || ''
+        }));
+    }
+
+    // Normalize phases
+    parsed.phases = parsed.phases.map((phase, pi) => {
+      const weeks = Array.isArray(phase.weeks) ? phase.weeks.map((week, wi) => {
+        const topics = Array.isArray(week.topics) ? week.topics.map((topic, ti) => ({
+          topicNumber:        topic.topicNumber        || ti + 1,
+          title:              topic.title              || `Topic ${ti + 1}`,
+          description:        topic.description        || '',
+          difficulty:         ['Beginner','Intermediate','Advanced'].includes(topic.difficulty) ? topic.difficulty : 'Beginner',
+          estimatedHours:     topic.estimatedHours     || 1,
+          learningObjectives: Array.isArray(topic.learningObjectives) ? topic.learningObjectives : [],
+          resources:          sanitizeResources(topic.resources),
+          exercises:          Array.isArray(topic.exercises) ? topic.exercises : [],
+          completed:          false,
+          completedAt:        null,
+          startedAt:          null
+        })) : [];
+
+        // Normalize week exercises (structured objects)
+        const weekExercises = Array.isArray(week.exercises) ? week.exercises
+          .filter(e => e && (typeof e === 'object' ? e.title : e))
+          .map((e, ei) => {
+            if (typeof e === 'string') {
+              // Legacy string format → convert to object
+              return {
+                exerciseNumber: ei + 1,
+                title: e,
+                description: '',
+                difficulty: 'Beginner',
+                completed: false,
+                completedAt: null
+              };
+            }
+            return {
+              exerciseNumber: e.exerciseNumber || ei + 1,
+              title: e.title || `Exercise ${ei + 1}`,
+              description: e.description || '',
+              difficulty: ['Beginner','Intermediate','Advanced'].includes(e.difficulty) ? e.difficulty : 'Beginner',
+              completed: false,
+              completedAt: null
+            };
+          }) : [];
+
+        return {
+          weekNumber:         week.weekNumber     || wi + 1,
+          title:              week.title          || `Week ${wi + 1}`,
+          description:        week.description    || '',
+          estimatedHours:     week.estimatedHours || 8,
+          practiceProject:    week.practiceProject || '',
+          topics,
+          exercises:          weekExercises,
+          resources:          sanitizeResources(week.resources),
+          status:             'not-started',
+          progressPercentage: 0
+        };
+      }) : [];
+
+      return {
+        phaseNumber:        phase.phaseNumber   || pi + 1,
+        title:              phase.title         || `Phase ${pi + 1}`,
+        description:        phase.description   || '',
+        duration:           phase.duration      || '',
+        skills:             Array.isArray(phase.skills) ? phase.skills : [],
+        reason:             phase.reason        || '',
+        weeks,
+        topics:             [],    // keep for legacy compat
+        practicalExercises: [],
+        resources:          [],
+        status:             'not-started',
+        progressPercentage: 0
+      };
+    });
+
+    return { success: true, data: parsed };
 
   } catch (err) {
-
-    console.error(
-      'AI roadmap generation failed:',
-      err.message
-    );
-
-    return {
-      success: false,
-      error: err.message
-    };
+    console.error('AI roadmap generation failed:', err.message);
+    return { success: false, error: err.message };
   }
 }
 
 
-// ============================================================
-// MENTOR OUTPUT SANITIZER (server-side safety net)
-// ============================================================
-// The system prompt tells the model exactly how to format, but weaker/
-// faster models (Groq's gpt-oss-120b especially) still drift: emoji
-// headings instead of "##", "####" (unsupported — renderer only knows
-// #/##/###), blank lines inserted between table rows, vertical "↓"
-// flow diagrams instead of one-line "→" chains. Rather than chase every
-// new drift pattern in the prompt, this runs on every response before
-// it reaches the client, so formatting is guaranteed regardless of the
-// model's compliance that turn.
-function sanitizeMentorOutput(text) {
-  if (!text) return text;
-
-  let lines = text.replace(/\r\n/g, '\n').split('\n');
-
-  // 1) Cap heading depth at "###" (renderer doesn't support "####"+).
-  lines = lines.map(line =>
-    line.replace(/^(\s*)#{4,}(\s+)/, '$1###$2')
-  );
-
-  // 2) Collapse blank lines sitting between markdown table rows.
-  const collapsed = [];
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.trim() === '') {
-      const prev = collapsed[collapsed.length - 1];
-      const next = lines.slice(i + 1).find(l => l.trim() !== '');
-      if (prev?.trim().startsWith('|') && next?.trim().startsWith('|')) {
-        continue; // drop this blank line
-      }
-    }
-    collapsed.push(line);
-  }
-  lines = collapsed;
-
-  // 3) Promote pseudo-headings to real "## " headings:
-  //    - emoji + short title line, e.g. "🎯 Quick Goal"
-  //    - keycap-number + title, e.g. "1️⃣ Ingredients"
-  const keycapHeading = /^[0-9]\uFE0F?\u20E3\s*(.+)$/u;
-  const emojiHeading = /^[\p{Emoji_Presentation}\u2600-\u27BF\uFE0F]+\s*([A-Z0-9][^.!?]{2,60})$/u;
-  lines = lines.map(line => {
-    const t = line.trim();
-    if (/^#{1,3}\s/.test(t)) return line; // already a real heading
-    if (keycapHeading.test(t)) return `## ${t.replace(keycapHeading, '$1')}`;
-    if (emojiHeading.test(t)) return `## ${t}`;
-    return line;
-  });
-
-  // 4) Collapse a vertical "↓" flow diagram into a single "→" chain,
-  //    e.g. "Client\n ↓ HTTPS\nServer\n ↓ ODM\nDatabase" becomes
-  //    "Client → Server → Database" on one line.
-  const flowed = [];
-  for (let i = 0; i < lines.length; i++) {
-    const isLabel = lines[i].trim() && !/↓/.test(lines[i]) && !lines[i].trim().startsWith('|');
-    if (isLabel && i + 1 < lines.length && /↓/.test(lines[i + 1])) {
-      const steps = [lines[i].trim()];
-      let j = i + 1;
-      while (j < lines.length) {
-        if (/↓/.test(lines[j])) { j++; continue; }
-        if (lines[j].trim() === '') break;
-        steps.push(lines[j].trim());
-        j++;
-      }
-      if (steps.length > 1) {
-        flowed.push(steps.join(' → '));
-        i = j - 1;
-        continue;
-      }
-    }
-    flowed.push(lines[i]);
-  }
-  lines = flowed;
-
-  return lines.join('\n');
-}
-
-
-// ============================================================
-// CAREER MENTOR CHAT
-// ============================================================
 
 async function chatWithMentor(
   context,
@@ -932,8 +1123,24 @@ async function chatWithMentor(
     skillScores,
     skillGaps,
     roadmapPhase,
-    userName
+    userName,
+    topicContext
   } = context;
+
+  const topicContextStr = topicContext ? `
+CURRENT LEARNING CONTEXT (from roadmap):
+Phase: ${topicContext.phase || ''}
+Week: ${topicContext.week || ''}
+Topic: ${topicContext.topic || ''}
+Topic Description: ${topicContext.topicDescription || ''}
+Difficulty: ${topicContext.difficulty || ''}
+Learning Objectives: ${(topicContext.learningObjectives || []).join(', ')}
+
+The user is currently studying this specific topic. Answer in the context of this topic.
+If they ask "explain this", explain "${topicContext.topic}".
+If they ask for exercises, give exercises specifically for "${topicContext.topic}".
+If they ask to quiz them, quiz them on "${topicContext.topic}".
+` : '';
 
   const topGaps =
     skillGaps
@@ -988,6 +1195,8 @@ ${topGaps}
 
 Current Roadmap Phase:
 ${roadmapPhase || 'Not started'}
+
+${topicContextStr}
 
 YOUR ROLE
 

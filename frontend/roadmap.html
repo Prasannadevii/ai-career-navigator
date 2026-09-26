@@ -6,30 +6,223 @@
 <title>My Roadmap — AI Career Navigator</title>
 <link rel="stylesheet" href="/css/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Phase accordion ─────────────────────────────────────── */
+.phase-block {
+  border:1px solid rgba(79,70,229,.3);border-radius:var(--radius-lg);
+  overflow:hidden;margin-bottom:1.25rem;background:var(--bg-card);
+  box-shadow:var(--shadow-sm);
+}
+.phase-header {
+  display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem;
+  cursor:pointer;user-select:none;background:rgba(79,70,229,.05);
+  transition:background .15s;
+}
+.phase-header:hover{background:rgba(79,70,229,.1);}
+.phase-num {
+  width:36px;height:36px;border-radius:50%;background:var(--primary);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.875rem;flex-shrink:0;
+}
+.phase-num.done{background:#10B981;}
+.phase-num.going{background:#4F46E5;}
+.phase-info{flex:1;min-width:0;}
+.phase-title{font-size:1rem;font-weight:700;}
+.phase-sub{font-size:.75rem;color:var(--text-muted);margin-top:.15rem;}
+.phase-pbar{height:3px;background:var(--bg-hover);margin-top:.5rem;border-radius:2px;}
+.phase-pfill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:2px;transition:width .4s ease;}
+.phase-chev{font-size:1rem;color:var(--text-muted);transition:transform .2s;flex-shrink:0;}
+.phase-chev.open{transform:rotate(180deg);}
+.phase-body{display:none;border-top:1px solid var(--border);}
+.phase-body.open{display:block;}
+
+/* ── Week ─────────────────────────────────────────────────── */
+.week-block{border-bottom:1px solid var(--border);background:rgba(15,23,42,.55);}
+.week-block:last-child{border-bottom:none;}
+.week-header {
+  display:flex;align-items:center;gap:.875rem;padding:1rem 1.5rem;
+  cursor:pointer;user-select:none;transition:background .15s;
+}
+.week-header:hover{background:rgba(255,255,255,.025);}
+.week-num {
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  background:rgba(79,70,229,.18);border:1px solid rgba(79,70,229,.35);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:700;color:var(--primary-light);
+}
+.week-num.done{background:rgba(16,185,129,.18);border-color:rgba(16,185,129,.4);color:#10B981;}
+.week-num.going{background:rgba(79,70,229,.28);}
+.week-info{flex:1;min-width:0;}
+.week-title{font-size:.875rem;font-weight:600;}
+.week-meta{font-size:.72rem;color:var(--text-muted);margin-top:.1rem;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;}
+.week-minibar{height:3px;background:var(--bg-hover);border-radius:2px;margin-top:.4rem;}
+.week-minifill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:2px;transition:width .35s ease;}
+.week-chev{font-size:.85rem;color:var(--text-muted);transition:transform .2s;flex-shrink:0;}
+.week-chev.open{transform:rotate(180deg);}
+.week-body{display:none;padding:0 1.5rem 1.5rem;}
+.week-body.open{display:block;}
+
+/* ── Practice project banner ────────────────────────────── */
+.practice-banner {
+  background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);
+  border-radius:var(--radius-sm);padding:.625rem .875rem;
+  font-size:.82rem;color:var(--text-muted);margin:.75rem 0;
+}
+.practice-banner strong{color:#10B981;}
+
+/* ── Topics & Exercises section labels ──────────────────── */
+.section-label {
+  font-size:.68rem;font-weight:700;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:.08em;
+  margin:1rem 0 .5rem;padding-bottom:.35rem;
+  border-bottom:1px solid var(--border);
+}
+
+/* ── Checkbox rows ───────────────────────────────────────── */
+.check-row {
+  display:flex;align-items:flex-start;gap:.75rem;
+  padding:.6rem .75rem;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--bg-card);
+  margin-bottom:.4rem;transition:border-color .15s,background .15s;
+  cursor:pointer;
+}
+.check-row:hover{border-color:var(--primary-light);background:rgba(79,70,229,.04);}
+.check-row.row-done{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04);}
+.check-row.row-done:hover{border-color:rgba(16,185,129,.5);}
+
+.cb {
+  width:18px;height:18px;border-radius:4px;flex-shrink:0;margin-top:.15rem;
+  border:2px solid var(--border);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;transition:all .15s;
+}
+.cb.checked{background:#10B981;border-color:#10B981;color:#fff;}
+.cb.loading-cb{background:var(--bg-hover);border-color:var(--border);color:var(--text-muted);}
+
+.row-content{flex:1;min-width:0;}
+.row-title{font-size:.84rem;font-weight:500;}
+.row-title.done-text{text-decoration:line-through;color:var(--text-muted);}
+.row-badges{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.2rem;}
+
+/* ── Expand topic detail ─────────────────────────────────── */
+.topic-expand{font-size:.75rem;color:var(--text-dim);cursor:pointer;flex-shrink:0;margin-top:.15rem;padding:.15rem .4rem;border-radius:3px;}
+.topic-expand:hover{color:var(--primary-light);background:rgba(79,70,229,.08);}
+.topic-detail{display:none;padding:.75rem .75rem .5rem;border-top:1px solid var(--border);background:rgba(0,0,0,.12);}
+.topic-detail.open{display:block;}
+
+.obj-list{list-style:none;padding:0;margin:0 0 .625rem;display:flex;flex-direction:column;gap:.25rem;}
+.obj-list li{font-size:.78rem;color:var(--text-muted);display:flex;align-items:flex-start;gap:.4rem;}
+.obj-list li::before{content:'✦';color:var(--primary-light);font-size:.55rem;margin-top:.2rem;flex-shrink:0;}
+
+/* ── Resources ───────────────────────────────────────────── */
+.res-item {
+  display:flex;align-items:flex-start;gap:.625rem;
+  padding:.5rem .625rem;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--bg);
+  margin-bottom:.35rem;transition:border-color .15s;
+}
+.res-item:hover{border-color:var(--primary-light);}
+.res-icon{font-size:1rem;flex-shrink:0;margin-top:.1rem;}
+.res-info{flex:1;min-width:0;}
+.res-name{font-size:.8rem;font-weight:600;}
+.res-desc{font-size:.72rem;color:var(--text-muted);margin-top:.05rem;}
+.res-link {
+  display:inline-flex;align-items:center;gap:.25rem;font-size:.72rem;
+  color:var(--primary-light);text-decoration:none;padding:.2rem .5rem;
+  border:1px solid rgba(79,70,229,.3);border-radius:4px;white-space:nowrap;
+  flex-shrink:0;transition:background .15s;
+}
+.res-link:hover{background:rgba(79,70,229,.1);}
+
+/* ── Ask AI button ───────────────────────────────────────── */
+.ask-ai-btn {
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.75rem;color:var(--text-muted);cursor:pointer;
+  padding:.2rem .5rem;border-radius:4px;border:1px solid var(--border);
+  background:none;transition:all .15s;margin-top:.4rem;
+}
+.ask-ai-btn:hover{color:var(--primary-light);border-color:var(--primary-light);background:rgba(79,70,229,.07);}
+
+/* ── Overall header ──────────────────────────────────────── */
+.rm-header-card {
+  background:linear-gradient(135deg,rgba(79,70,229,.1),rgba(6,182,212,.06));
+  border:1px solid rgba(79,70,229,.22);border-radius:var(--radius-lg);
+  padding:1.5rem;margin-bottom:1.5rem;
+}
+.rm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:1rem;margin-top:1rem;}
+.rm-stat{text-align:center;}
+.rm-stat-val{font-size:1.5rem;font-weight:900;color:var(--primary-light);}
+.rm-stat-lbl{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+
+/* ── Journey context banner ──────────────────────────────── */
+.journey-banner{
+  background:rgba(79,70,229,.07);border:1px solid rgba(79,70,229,.2);
+  border-radius:var(--radius-sm);padding:.625rem 1rem;margin-bottom:1.25rem;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:.5rem;font-size:.85rem;
+}
+
+/* ── Badges ──────────────────────────────────────────────── */
+.diff-b{background:rgba(16,185,129,.1);color:#10B981;border:1px solid rgba(16,185,129,.25);}
+.diff-i{background:rgba(245,158,11,.1);color:#F59E0B;border:1px solid rgba(245,158,11,.25);}
+.diff-a{background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.25);}
+.st-done{background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.25);}
+.st-going{background:rgba(79,70,229,.12);color:#818CF8;border:1px solid rgba(79,70,229,.25);}
+.st-new{background:rgba(100,116,139,.1);color:#94A3B8;border:1px solid rgba(100,116,139,.2);}
+
+/* ── Regen modal ─────────────────────────────────────────── */
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;
+  display:flex;align-items:center;justify-content:center;padding:1rem;}
+.modal-back.hidden{display:none;}
+.modal-box{background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:2rem;max-width:440px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);}
+
+@media(max-width:600px){
+  .phase-header,.week-header{padding:.875rem 1rem;}
+  .week-body{padding:0 1rem 1rem;}
+  .rm-stats{grid-template-columns:repeat(2,1fr);}
+}
+</style>
 </head>
 <body>
 <div class="page-layout">
   <div id="sidebar-placeholder"></div>
-
   <div class="main-content">
     <header class="page-header">
       <button class="hamburger" id="hamburger">☰</button>
       <div>
-        <div class="page-title">My Learning Roadmap</div>
-        <div class="page-subtitle" id="roadmap-subtitle">AI-personalized learning path</div>
+        <div class="page-title">🗺️ My Learning Roadmap</div>
+        <div class="page-subtitle" id="rm-subtitle">AI-personalized learning path</div>
       </div>
-      <div style="display:flex;gap:.75rem">
-        <button class="btn btn-outline btn-sm" id="recalc-btn" onclick="recalculateRoadmap()" style="display:none">🔄 Recalculate</button>
-        <button class="btn btn-primary btn-sm" id="generate-btn" onclick="generateRoadmap()">✨ Generate Roadmap</button>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" id="recalc-btn" onclick="confirmRegen()" style="display:none">🔄 Regenerate</button>
+        <button class="btn btn-primary btn-sm" id="gen-btn" onclick="generateRoadmap()">✨ Generate Roadmap</button>
       </div>
     </header>
 
-    <main class="page-body" id="roadmap-content">
+    <main class="page-body" id="rm-content">
       <div style="text-align:center;padding:4rem">
-        <div class="loading-spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto 1rem"></div>
-        <p class="text-muted">Loading roadmap...</p>
+        <div class="loading-spinner" style="width:40px;height:40px;border-width:3px;margin:0 auto 1rem"></div>
+        <p class="text-muted">Loading your roadmap…</p>
       </div>
     </main>
+  </div>
+</div>
+
+<!-- Regenerate confirmation -->
+<div class="modal-back hidden" id="regen-modal">
+  <div class="modal-box">
+    <div style="font-size:1.75rem;margin-bottom:.625rem">⚠️</div>
+    <h3 style="margin-bottom:.4rem">Regenerate Roadmap?</h3>
+    <p class="text-muted" style="margin-bottom:1.25rem;line-height:1.6;font-size:.875rem">
+      A new version will be created based on your latest assessment.
+      <strong>Your completed progress is saved in the previous version.</strong>
+    </p>
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="generateRoadmap();closeRegen()">✨ Regenerate</button>
+      <button class="btn btn-ghost" onclick="closeRegen()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -39,240 +232,530 @@
 if (!requireAuth()) throw new Error('not auth');
 injectSidebar('roadmap');
 
-let currentRoadmap = null;
+// ── URL context ───────────────────────────────────────────────────────────────
+const _p           = new URLSearchParams(location.search);
+const urlJourneyId = _p.get('journeyId') || null;
+const urlCareerId  = _p.get('careerId')  || null;
 
-function statusIcon(s) {
-  return {completed:'✅','in-progress':'🔄','not-started':'⭕'}[s]||'⭕';
+let currentRoadmap   = null;
+let ctxJourneyId     = urlJourneyId;
+let ctxCareerId      = urlCareerId;
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function confirmRegen(){ document.getElementById('regen-modal').classList.remove('hidden'); }
+function closeRegen()  { document.getElementById('regen-modal').classList.add('hidden');    }
+
+// ── Badge helpers ─────────────────────────────────────────────────────────────
+function diffBadge(d){
+  const c = d==='Advanced'?'diff-a':d==='Intermediate'?'diff-i':'diff-b';
+  return `<span class="badge ${c}" style="font-size:.65rem">${d}</span>`;
 }
-function statusLabel(s) {
-  return {'not-started':'Not Started','in-progress':'In Progress','completed':'Completed'}[s]||s;
+function stBadge(s){
+  const c = s==='completed'?'st-done':s==='in-progress'?'st-going':'st-new';
+  const l = s==='completed'?'✅ Done':s==='in-progress'?'🔄 In Progress':'⭕ Not Started';
+  return `<span class="badge ${c}" style="font-size:.65rem">${l}</span>`;
 }
-function statusBadge(s) {
-  const c={'completed':'badge-green','in-progress':'badge-blue','not-started':'badge-gray'};
-  return `<span class="badge ${c[s]||'badge-gray'}">${statusLabel(s)}</span>`;
+function pbColor(p){ return p>=80?'green':p>=40?'':'yellow'; }
+function resIcon(t){
+  return {documentation:'📘',course:'🎓',tutorial:'📖',video:'🎬',
+          practice:'💻',book:'📚',github:'🐙',other:'🔗'}[t]||'🔗';
 }
 
-function renderRoadmap(roadmap) {
-  currentRoadmap = roadmap;
-  document.getElementById('roadmap-subtitle').textContent =
-    `${roadmap.careerId?.title || 'Career'} · Version ${roadmap.version} · Generated by ${roadmap.generatedBy}`;
-  document.getElementById('recalc-btn').style.display = 'inline-flex';
-  document.getElementById('generate-btn').textContent = '✨ Regenerate';
+// ── Toggle accordions ─────────────────────────────────────────────────────────
+function togglePhase(pid){
+  const b=document.getElementById(`pb-${pid}`), c=document.getElementById(`pc-${pid}`);
+  const open=b.classList.toggle('open'); c.classList.toggle('open',open);
+}
+function toggleWeek(wid){
+  const b=document.getElementById(`wb-${wid}`), c=document.getElementById(`wc-${wid}`);
+  const open=b.classList.toggle('open'); c.classList.toggle('open',open);
+}
+function toggleTopic(tid){
+  const d=document.getElementById(`td-${tid}`), btn=document.getElementById(`te-${tid}`);
+  const open=d.classList.toggle('open');
+  if(btn) btn.textContent = open ? '▴ Hide' : '▾ Details';
+}
 
-  const phases = roadmap.phases || [];
-  const completed = phases.filter(p=>p.status==='completed').length;
-
-  document.getElementById('roadmap-content').innerHTML = `
-    <!-- Overall progress -->
-    <div class="card" style="margin-bottom:1.5rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
-        <div>
-          <div style="font-size:1.1rem;font-weight:700">Overall Progress</div>
-          <div class="text-muted text-sm">${completed} of ${phases.length} phases completed</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:2rem;font-weight:900;color:var(--primary-light)">${roadmap.overallProgress}%</div>
-          <div class="text-muted text-xs">complete</div>
-        </div>
+// ── Render resource ───────────────────────────────────────────────────────────
+function rRes(r){
+  const link = r.url
+    ? `<a href="${r.url}" target="_blank" rel="noopener noreferrer" class="res-link">Open ↗</a>`
+    : `<span style="font-size:.72rem;color:var(--text-dim)">No link</span>`;
+  return `
+    <div class="res-item">
+      <span class="res-icon">${resIcon(r.type)}</span>
+      <div class="res-info">
+        <div class="res-name">${r.title}</div>
+        ${r.description?`<div class="res-desc">${r.description}</div>`:''}
+        ${r.platform?`<div class="res-desc" style="color:var(--text-dim)">${r.platform}${r.isFree?' · Free':''}</div>`:''}
       </div>
-      <div class="progress-bar-wrap" style="height:12px">
-        <div class="progress-bar-fill green" style="width:${roadmap.overallProgress}%"></div>
-      </div>
-      ${roadmap.aiSummary ? `
-        <div style="margin-top:1rem;padding:.875rem;background:rgba(79,70,229,.08);border-radius:var(--radius-sm);border:1px solid rgba(79,70,229,.2);font-size:.875rem;color:var(--text-muted);line-height:1.6">
-          🤖 <em>${roadmap.aiSummary}</em>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- Phases -->
-    <div id="phases-container">
-      ${phases.map((phase, i) => renderPhase(phase, i, roadmap._id)).join('')}
-    </div>
-
-    <!-- Bottom CTA -->
-    <div style="display:flex;gap:.75rem;margin-top:1.5rem;flex-wrap:wrap">
-      <a href="/mentor.html" class="btn btn-primary">🤖 Ask AI Mentor</a>
-      <a href="/assessment.html" class="btn btn-outline">📝 Reassess Skills</a>
-    </div>
-  `;
+      ${link}
+    </div>`;
 }
 
-function renderPhase(phase, i, roadmapId) {
-  const topics = phase.topics || [];
-  const exercises = phase.practicalExercises || [];
-  const resources = phase.resources || [];
+// ── Render one topic row ──────────────────────────────────────────────────────
+function rTopic(topic, roadmapId, phaseTitle, weekTitle){
+  const tid  = topic._id;
+  const done = topic.completed;
+  const objs = (topic.learningObjectives||[]).map(o=>`<li>${o}</li>`).join('');
+  const ress = (topic.resources||[]).filter(r=>r.title).map(rRes).join('');
+  const exs  = (topic.exercises||[]).map(e=>`<div style="font-size:.78rem;color:var(--text-muted);padding:.2rem 0">🛠 ${e}</div>`).join('');
+
+  const ctxQ = encodeURIComponent(`I'm studying "${topic.title}" (${weekTitle}, ${phaseTitle}). Can you explain this and give me practical examples?`);
+  const jPrm = ctxJourneyId ? `&journeyId=${ctxJourneyId}` : '';
+
+  const hasDetail = objs || ress || exs || topic.description;
 
   return `
-    <div class="roadmap-phase" id="phase-${i}">
-      <div class="phase-dot ${phase.status}">
-        ${phase.status === 'completed' ? '✓' : phase.status === 'in-progress' ? '▶' : i+1}
+    <div class="check-row ${done?'row-done':''}" id="tr-${tid}">
+      <div class="cb ${done?'checked':''}" id="cb-${tid}"
+           onclick="event.stopPropagation();doCompleteTopic('${roadmapId}','${tid}',${done})"
+           title="${done?'Mark incomplete':'Mark complete'}">
+        ${done?'✓':''}
       </div>
-      <div class="phase-card ${phase.status === 'in-progress' ? 'active' : phase.status === 'completed' ? 'completed-phase' : ''}">
-        <div class="phase-header">
-          <div>
-            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.2rem">Phase ${phase.phaseNumber || i+1}</div>
-            <div class="phase-title">${phase.title}</div>
-          </div>
-          <div class="phase-meta">
-            <span class="badge badge-gray">⏱ ${phase.duration}</span>
-            ${statusBadge(phase.status)}
-          </div>
+      <div class="row-content">
+        <div class="row-title ${done?'done-text':''}" id="rt-${tid}">${topic.topicNumber||''}. ${topic.title}</div>
+        <div class="row-badges">
+          ${topic.difficulty?diffBadge(topic.difficulty):''}
+          ${topic.estimatedHours?`<span style="font-size:.68rem;color:var(--text-dim)">⏱ ~${topic.estimatedHours}h</span>`:''}
         </div>
-
-        <!-- Progress bar for phase -->
-        <div style="margin-bottom:.75rem">
-          <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text-muted);margin-bottom:.3rem">
-            <span>Phase Progress</span><span>${phase.progressPercentage}%</span>
+        ${hasDetail?`
+          <div class="topic-detail" id="td-${tid}">
+            ${topic.description?`<div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem;line-height:1.6">${topic.description}</div>`:''}
+            ${objs?`<ul class="obj-list">${objs}</ul>`:''}
+            ${ress?`<div style="margin-bottom:.5rem"><div class="section-label" style="margin-top:0">📚 Resources</div>${ress}</div>`:''}
+            ${exs?`<div style="margin-bottom:.5rem"><div class="section-label" style="margin-top:0">🛠 Hints</div>${exs}</div>`:''}
+            <button class="ask-ai-btn" onclick="askAI('${ctxQ}${jPrm}')">🤖 Ask AI about this topic</button>
           </div>
-          <div class="progress-bar-wrap" style="height:5px">
-            <div class="progress-bar-fill ${phase.status==='completed'?'green':''}" style="width:${phase.progressPercentage}%"></div>
-          </div>
-        </div>
-
-        ${phase.reason ? `<p style="font-size:.8rem;color:var(--text-muted);font-style:italic;margin-bottom:.75rem">📌 ${phase.reason}</p>` : ''}
-
-        ${topics.length ? `
-          <div style="margin-bottom:.75rem">
-            <div style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin-bottom:.4rem">Topics to cover:</div>
-            <div class="phase-topics">
-              ${topics.map(t=>`<span class="topic-chip">📖 ${t}</span>`).join('')}
-            </div>
-          </div>
-        ` : ''}
-
-        ${exercises.length ? `
-          <div style="margin-bottom:.75rem">
-            <div style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin-bottom:.4rem">Practical exercises:</div>
-            <div style="display:flex;flex-direction:column;gap:.3rem">
-              ${exercises.map(ex=>`<div style="font-size:.8rem;color:var(--text-muted)">🛠 ${ex}</div>`).join('')}
-            </div>
-          </div>
-        ` : ''}
-
-        ${resources.length ? `
-          <div style="margin-bottom:.75rem">
-            <div style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin-bottom:.4rem">Resources:</div>
-            <div style="display:flex;flex-wrap:wrap;gap:.4rem">
-              ${resources.map(r=>`<span class="topic-chip">🔗 ${r}</span>`).join('')}
-            </div>
-          </div>
-        ` : ''}
-
-        <!-- Phase actions -->
-        <div class="phase-actions">
-          ${phase.status !== 'completed' ? `
-            <div style="display:flex;align-items:center;gap:.5rem;flex:1">
-              <input type="range" min="0" max="100" value="${phase.progressPercentage}"
-                style="flex:1;accent-color:var(--primary)"
-                oninput="document.getElementById('prog-val-${i}').textContent=this.value+'%'"
-                onchange="updatePhaseProgress('${roadmapId}', ${i}, this.value)"
-                id="prog-slider-${i}">
-              <span id="prog-val-${i}" style="font-size:.8rem;font-weight:700;min-width:36px">${phase.progressPercentage}%</span>
-            </div>
-          ` : `<span style="color:var(--success);font-size:.875rem;font-weight:600">✅ Completed!</span>`}
-          <button class="btn btn-sm ${phase.status==='not-started'?'btn-primary':'btn-secondary'}"
-            onclick="markPhase('${roadmapId}', ${i}, '${phase.status}')">
-            ${phase.status === 'not-started' ? 'Start Phase' :
-              phase.status === 'in-progress' ? '✅ Mark Complete' : '↩ Reset'}
-          </button>
-          <a href="/mentor.html?q=${encodeURIComponent('Help me with '+phase.title)}"
-             class="btn btn-ghost btn-sm">🤖 Ask AI</a>
-        </div>
+          <button class="topic-expand" id="te-${tid}" onclick="event.stopPropagation();toggleTopic('${tid}')">▾ Details</button>
+        `:''}
       </div>
-    </div>
-  `;
+      <div class="cb ${done?'checked':''}" style="visibility:hidden" aria-hidden="true"></div>
+    </div>`;
 }
 
-async function updatePhaseProgress(roadmapId, phaseIndex, value) {
-  try {
-    const res = await api.updateProgress({ roadmapId, phaseIndex, progressPercentage: parseInt(value) });
-    currentRoadmap = res.roadmap;
-    // Update overall progress
-    const op = document.querySelector('[id=roadmap-content] .stat-value');
-    // Just refresh
-    renderRoadmap(res.roadmap);
-  } catch (err) {
-    showToast('Failed to update progress: ' + err.message, 'error');
+// ── Render one exercise row ───────────────────────────────────────────────────
+function rExercise(ex, roadmapId){
+  const eid  = ex._id;
+  const done = ex.completed;
+  return `
+    <div class="check-row ${done?'row-done':''}" id="er-${eid}">
+      <div class="cb ${done?'checked':''}" id="ecb-${eid}"
+           onclick="doCompleteExercise('${roadmapId}','${eid}',${done})"
+           title="${done?'Mark incomplete':'Mark complete'}">
+        ${done?'✓':''}
+      </div>
+      <div class="row-content">
+        <div class="row-title ${done?'done-text':''}" id="et-${eid}">${ex.exerciseNumber||''}. ${ex.title}</div>
+        ${ex.description?`<div style="font-size:.78rem;color:var(--text-muted);margin-top:.2rem">${ex.description}</div>`:''}
+        ${ex.difficulty?`<div class="row-badges" style="margin-top:.2rem">${diffBadge(ex.difficulty)}</div>`:''}
+      </div>
+    </div>`;
+}
+
+// ── Render week ───────────────────────────────────────────────────────────────
+function rWeek(week, roadmapId, phaseTitle, pi, wi){
+  const wid       = week._id || `p${pi}w${wi}`;
+  const topics    = week.topics    || [];
+  const exercises = week.exercises || [];
+  const tDone     = topics.filter(t=>t.completed).length;
+  const eDone     = exercises.filter(e=>e.completed).length;
+  const total     = topics.length + exercises.length;
+  const done      = tDone + eDone;
+  const pct       = week.progressPercentage ?? (total>0?Math.round(done/total*100):0);
+  const stCls     = week.status==='completed'?'done':week.status==='in-progress'?'going':'';
+
+  const weekRes   = (week.resources||[]).filter(r=>r.title);
+
+  return `
+    <div class="week-block" id="wblock-${wid}">
+      <div class="week-header" onclick="toggleWeek('${wid}')">
+        <div class="week-num ${stCls}" id="wnum-${wid}">${week.weekNumber||wi+1}</div>
+        <div class="week-info">
+          <div class="week-title">Week ${week.weekNumber||wi+1}: ${week.title}</div>
+          <div class="week-meta" id="wmeta-${wid}">
+            <span id="wtc-${wid}">${tDone}/${topics.length} topics</span>
+            ${exercises.length?`<span id="wec-${wid}">${eDone}/${exercises.length} exercises</span>`:''}
+            <span id="wpct-${wid}">${pct}%</span>
+            ${week.estimatedHours?`<span>⏱ ~${week.estimatedHours}h</span>`:''}
+            <span id="wbadge-${wid}">${stBadge(week.status||'not-started')}</span>
+          </div>
+          <div class="week-minibar">
+            <div class="week-minifill" id="wbar-${wid}" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <span class="week-chev" id="wc-${wid}">▾</span>
+      </div>
+      <div class="week-body" id="wb-${wid}">
+        ${week.description?`<p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.625rem;line-height:1.6">${week.description}</p>`:''}
+        ${week.practiceProject?`<div class="practice-banner"><strong>🏗 Practice Project:</strong> ${week.practiceProject}</div>`:''}
+        ${weekRes.length?`<div class="section-label">📚 Week Resources</div>${weekRes.map(rRes).join('')}`:''}
+        ${topics.length?`<div class="section-label">📖 Topics</div>${topics.map(t=>rTopic(t,roadmapId,phaseTitle,week.title)).join('')}`:''}
+        ${exercises.length?`<div class="section-label">🛠 Practice Exercises</div>${exercises.map(e=>rExercise(e,roadmapId)).join('')}`:''}
+      </div>
+    </div>`;
+}
+
+// ── Render phase ──────────────────────────────────────────────────────────────
+function rPhase(phase, roadmapId, pi){
+  const pid   = phase._id || `ph${pi}`;
+  const pct   = phase.progressPercentage || 0;
+  const numCls= phase.status==='completed'?'done':phase.status==='in-progress'?'going':'';
+  const totalT= (phase.weeks||[]).reduce((s,w)=>s+(w.topics||[]).length,0);
+  const doneT = (phase.weeks||[]).reduce((s,w)=>s+(w.topics||[]).filter(t=>t.completed).length,0);
+  const totalE= (phase.weeks||[]).reduce((s,w)=>s+(w.exercises||[]).length,0);
+  const doneE = (phase.weeks||[]).reduce((s,w)=>s+(w.exercises||[]).filter(e=>e.completed).length,0);
+
+  const weeksHtml = (phase.weeks||[]).map((w,wi)=>rWeek(w,roadmapId,phase.title,pi,wi)).join('');
+
+  return `
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('${pid}')">
+        <div class="phase-num ${numCls}" id="pnum-${pid}">${phase.phaseNumber||pi+1}</div>
+        <div class="phase-info">
+          <div class="phase-title">Phase ${phase.phaseNumber||pi+1}: ${phase.title}</div>
+          <div class="phase-sub" id="psub-${pid}">
+            ${doneT}/${totalT} topics${totalE?` · ${doneE}/${totalE} exercises`:''} · <span id="ppct-${pid}">${pct}%</span> complete
+            ${phase.duration?` · ${phase.duration}`:''}
+          </div>
+          <div class="phase-pbar">
+            <div class="phase-pfill" id="pbar-${pid}" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <span class="phase-chev" id="pc-${pid}">▾</span>
+      </div>
+      <div class="phase-body" id="pb-${pid}">${weeksHtml}</div>
+    </div>`;
+}
+
+// ── Render legacy phase (no weeks, old schema) ────────────────────────────────
+function rLegacyPhase(phase, roadmapId, pi){
+  const pid = phase._id || `lph${pi}`;
+  const pct = phase.progressPercentage || 0;
+  const topics   = (phase.topics||[]).map(t=>`<div style="font-size:.84rem;padding:.25rem 0;color:var(--text-muted)">📌 ${t}</div>`).join('');
+  const exs      = (phase.practicalExercises||[]).map(e=>`<div style="font-size:.82rem;padding:.2rem 0;color:var(--text-muted)">🛠 ${e}</div>`).join('');
+  const ress     = (phase.resources||[]).map(r=>`<div style="font-size:.8rem;color:var(--text-muted)">🔗 ${r}</div>`).join('');
+  return `
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('${pid}')">
+        <div class="phase-num">${phase.phaseNumber||pi+1}</div>
+        <div class="phase-info">
+          <div class="phase-title">Phase ${phase.phaseNumber||pi+1}: ${phase.title}</div>
+          <div class="phase-sub">Legacy format · ${pct}% — regenerate for full tracking</div>
+          <div class="phase-pbar"><div class="phase-pfill" id="pbar-${pid}" style="width:${pct}%"></div></div>
+        </div>
+        <span class="phase-chev" id="pc-${pid}">▾</span>
+      </div>
+      <div class="phase-body" id="pb-${pid}">
+        <div style="padding:1.25rem 1.5rem">
+          ${phase.reason?`<p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.875rem;font-style:italic">${phase.reason}</p>`:''}
+          ${topics?`<div class="section-label">Topics</div>${topics}`:''}
+          ${exs?`<div class="section-label">Exercises</div>${exs}`:''}
+          ${ress?`<div class="section-label">Resources</div>${ress}`:''}
+          <div style="margin-top:.875rem">
+            <input type="range" min="0" max="100" value="${pct}"
+              style="width:180px;accent-color:var(--primary);vertical-align:middle"
+              oninput="document.getElementById('lp-${pid}').textContent=this.value+'%'"
+              onchange="updateLegacy('${roadmapId}',${pi},this.value)" />
+            <span id="lp-${pid}" style="font-size:.875rem;font-weight:700;margin-left:.5rem">${pct}%</span>
+          </div>
+          <p style="font-size:.72rem;color:var(--text-dim);margin-top:.5rem">
+            💡 <button class="btn btn-outline btn-sm" style="font-size:.72rem;padding:.2rem .6rem" onclick="confirmRegen()">Regenerate with full week/topic tracking</button>
+          </p>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Render overall header ─────────────────────────────────────────────────────
+function rHeader(rm){
+  const pct  = rm.overallProgress || 0;
+  const ttop = rm.totalTopics     || 0;
+  const ctop = rm.completedTopics || 0;
+  const tex  = rm.totalExercises     || 0;
+  const cex  = rm.completedExercises || 0;
+  const nw   = rm.phases.reduce((s,p)=>s+(p.weeks||[]).length,0);
+  const career = rm.careerId?.title || '';
+
+  document.getElementById('rm-subtitle').textContent =
+    `${career} · v${rm.version} · ${rm.generatedBy==='AI'?'🤖 AI-Personalized':'⚙️ System-Generated'}`;
+  document.getElementById('recalc-btn').style.display = 'inline-flex';
+  document.getElementById('gen-btn').textContent = '✨ Regenerate';
+
+  const jBanner = urlJourneyId ? `
+    <div class="journey-banner">
+      <span>📋 Career: <strong>${career}</strong></span>
+      <a href="/history.html" class="btn btn-ghost btn-sm">← Back to History</a>
+    </div>` : '';
+
+  return `
+    ${jBanner}
+    <div class="rm-header-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:1.1rem;font-weight:800">${career} Roadmap</div>
+          ${rm.aiSummary?`<div style="font-size:.8rem;color:var(--text-muted);margin-top:.3rem;line-height:1.55">${rm.aiSummary}</div>`:''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:2.5rem;font-weight:900;color:var(--primary-light);line-height:1" id="overall-pct">${pct}%</div>
+          <div style="font-size:.7rem;color:var(--text-muted)">Overall Progress</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--text-muted);margin-bottom:.35rem">
+          <span>Progress</span><span id="overall-pct-bar">${pct}%</span>
+        </div>
+        <div class="progress-bar-wrap" style="height:10px">
+          <div class="progress-bar-fill ${pbColor(pct)}" id="overall-bar" style="width:${pct}%;transition:width .5s ease"></div>
+        </div>
+      </div>
+      <div class="rm-stats">
+        <div class="rm-stat"><div class="rm-stat-val">${rm.phases.length}</div><div class="rm-stat-lbl">Phases</div></div>
+        <div class="rm-stat"><div class="rm-stat-val">${nw}</div><div class="rm-stat-lbl">Weeks</div></div>
+        <div class="rm-stat"><div class="rm-stat-val" id="stat-ctop">${ctop}</div><div class="rm-stat-lbl">Topics Done</div></div>
+        <div class="rm-stat"><div class="rm-stat-val">${ttop}</div><div class="rm-stat-lbl">Total Topics</div></div>
+        ${tex?`
+          <div class="rm-stat"><div class="rm-stat-val" id="stat-cex">${cex}</div><div class="rm-stat-lbl">Exercises Done</div></div>
+          <div class="rm-stat"><div class="rm-stat-val">${tex}</div><div class="rm-stat-lbl">Total Exercises</div></div>
+        `:''}
+      </div>
+    </div>`;
+}
+
+// ── Render full roadmap ───────────────────────────────────────────────────────
+function renderRoadmap(rm){
+  currentRoadmap = rm;
+  ctxCareerId    = rm.careerId?._id || rm.careerId || ctxCareerId;
+
+  // CRITICAL: extract journeyId from the loaded roadmap so all subsequent
+  // operations (regenerate, mentor link, results link) use the correct journey
+  if (rm.journeyId) {
+    const rmJourneyId = typeof rm.journeyId === 'object'
+      ? rm.journeyId.toString()
+      : rm.journeyId;
+    ctxJourneyId = ctxJourneyId || rmJourneyId;
+  }
+
+  const hasNew   = rm.phases.some(p=>p.weeks&&p.weeks.length>0);
+
+  const phasesHtml = rm.phases.map((p,i)=>
+    (p.weeks&&p.weeks.length>0) ? rPhase(p,rm._id,i) : rLegacyPhase(p,rm._id,i)
+  ).join('');
+
+  document.getElementById('rm-content').innerHTML =
+    rHeader(rm) + `
+    <div id="phases-wrap">${phasesHtml}</div>
+    ${!hasNew?`
+      <div class="card" style="margin-top:1.25rem;text-align:center;padding:1.5rem;
+           background:rgba(79,70,229,.05);border-color:rgba(79,70,229,.2)">
+        <div style="font-size:1.2rem;margin-bottom:.5rem">🚀 Upgrade Your Roadmap</div>
+        <p class="text-muted" style="margin-bottom:1rem;font-size:.875rem">Regenerate to unlock week-by-week topic tracking and exercise checkboxes.</p>
+        <button class="btn btn-primary" onclick="confirmRegen()">✨ Regenerate with Full Tracking</button>
+      </div>`:''}
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;margin-top:1.25rem">
+      <a href="/mentor.html${ctxJourneyId?'?journeyId='+ctxJourneyId:''}" class="btn btn-primary">🤖 AI Mentor</a>
+      <a href="/results.html${ctxJourneyId?'?journeyId='+ctxJourneyId:''}" class="btn btn-outline">📈 Results</a>
+      ${urlJourneyId?'<a href="/history.html" class="btn btn-ghost">← Career History</a>':''}
+    </div>`;
+
+  autoOpen(rm);
+}
+
+// ── Auto-open first in-progress or first phase ────────────────────────────────
+function autoOpen(rm){
+  for(let pi=0;pi<rm.phases.length;pi++){
+    const p   = rm.phases[pi];
+    const pid = p._id || `ph${pi}`;
+    if(p.status==='in-progress'||(pi===0&&p.status==='not-started')){
+      const pb  = document.getElementById(`pb-${pid}`);
+      const pc  = document.getElementById(`pc-${pid}`);
+      if(pb){ pb.classList.add('open'); pc?.classList.add('open'); }
+      for(let wi=0;wi<(p.weeks||[]).length;wi++){
+        const w   = p.weeks[wi];
+        const wid = w._id||`p${pi}w${wi}`;
+        if(w.status==='in-progress'||wi===0){
+          const wb  = document.getElementById(`wb-${wid}`);
+          const wc  = document.getElementById(`wc-${wid}`);
+          if(wb){ wb.classList.add('open'); wc?.classList.add('open'); }
+          break;
+        }
+      }
+      break;
+    }
   }
 }
 
-async function markPhase(roadmapId, phaseIndex, currentStatus) {
-  const nextStatus = currentStatus === 'not-started' ? 'in-progress' :
-                     currentStatus === 'in-progress'  ? 'completed'   : 'not-started';
-  const pct = nextStatus === 'completed' ? 100 : nextStatus === 'not-started' ? 0 : 50;
-  try {
-    const res = await api.updateProgress({ roadmapId, phaseIndex, status: nextStatus, progressPercentage: pct });
-    renderRoadmap(res.roadmap);
-    showToast(`Phase marked as ${statusLabel(nextStatus)}`, 'success');
-  } catch (err) {
-    showToast('Error: ' + err.message, 'error');
+// ── Update all progress DOM after topic/exercise toggle ───────────────────────
+function applyProgress(prog){
+  // Overall
+  const pct = prog.overallProgress;
+  const bar  = document.getElementById('overall-bar');
+  const bpct = document.getElementById('overall-pct-bar');
+  const hpct = document.getElementById('overall-pct');
+  const ctop = document.getElementById('stat-ctop');
+  const cex  = document.getElementById('stat-cex');
+  if(bar)  bar.style.width  = pct+'%';
+  if(bpct) bpct.textContent = pct+'%';
+  if(hpct) hpct.textContent = pct+'%';
+  if(ctop) ctop.textContent = prog.completedTopics || 0;
+  if(cex)  cex.textContent  = prog.completedExercises || 0;
+
+  // Phases and weeks
+  for(const ph of prog.phases||[]){
+    const pid   = ph._id;
+    const pbar  = document.getElementById(`pbar-${pid}`);
+    const ppct  = document.getElementById(`ppct-${pid}`);
+    const pnum  = document.getElementById(`pnum-${pid}`);
+    if(pbar) pbar.style.width  = ph.progressPercentage+'%';
+    if(ppct) ppct.textContent  = ph.progressPercentage+'%';
+    if(pnum){ pnum.className = 'phase-num'+(ph.status==='completed'?' done':ph.status==='in-progress'?' going':''); }
+
+    for(const wk of ph.weeks||[]){
+      const wid   = wk._id;
+      const wbar  = document.getElementById(`wbar-${wid}`);
+      const wpct  = document.getElementById(`wpct-${wid}`);
+      const wbadge= document.getElementById(`wbadge-${wid}`);
+      const wnum  = document.getElementById(`wnum-${wid}`);
+      const wtc   = document.getElementById(`wtc-${wid}`);
+      const wec   = document.getElementById(`wec-${wid}`);
+      if(wbar)  wbar.style.width   = wk.progressPercentage+'%';
+      if(wpct)  wpct.textContent   = wk.progressPercentage+'%';
+      if(wbadge)wbadge.innerHTML   = stBadge(wk.status);
+      if(wnum){ wnum.className = 'week-num'+(wk.status==='completed'?' done':wk.status==='in-progress'?' going':''); }
+      if(wtc)   wtc.textContent    = (wk.completedTopics||0)+'/'+(wk.totalTopics||0)+' topics';
+      if(wec && wk.totalExercises) wec.textContent = (wk.completedExercises||0)+'/'+(wk.totalExercises||0)+' exercises';
+    }
   }
 }
 
-async function generateRoadmap() {
-  const btn = document.getElementById('generate-btn');
-  setLoading(btn, true, 'Generating...');
-  document.getElementById('roadmap-content').innerHTML = `
-    <div style="text-align:center;padding:4rem">
-      <div class="loading-spinner" style="width:48px;height:48px;border-width:3px;margin:0 auto 1.5rem"></div>
-      <h3 style="margin-bottom:.5rem">Generating Your AI Roadmap</h3>
-      <p class="text-muted">Analyzing your skill gaps and crafting a personalized plan...</p>
-    </div>
-  `;
+// ── Topic completion ──────────────────────────────────────────────────────────
+async function doCompleteTopic(roadmapId, topicId, curDone){
+  const newDone = !curDone;
+  const cb   = document.getElementById(`cb-${topicId}`);
+  const row  = document.getElementById(`tr-${topicId}`);
+  const rt   = document.getElementById(`rt-${topicId}`);
+
+  // Optimistic UI
+  if(cb){ cb.classList.add('loading-cb'); cb.innerHTML='⏳'; }
+
   try {
-    const res = await api.generateRoadmap();
+    const res = await api.completeTopic(roadmapId, topicId, newDone);
+
+    // Commit UI
+    if(cb){
+      cb.classList.remove('loading-cb');
+      cb.classList.toggle('checked', newDone);
+      cb.innerHTML = newDone ? '✓' : '';
+      cb.setAttribute('onclick',`event.stopPropagation();doCompleteTopic('${roadmapId}','${topicId}',${newDone})`);
+    }
+    row?.classList.toggle('row-done', newDone);
+    rt?.classList.toggle('done-text', newDone);
+
+    if(res.progress) applyProgress(res.progress);
+    showToast(newDone ? '✅ Topic completed!' : '↩ Marked incomplete', newDone?'success':'info', 1800);
+  } catch(err){
+    // Revert
+    if(cb){ cb.classList.remove('loading-cb'); cb.classList.toggle('checked',curDone); cb.innerHTML=curDone?'✓':''; }
+    showToast('Failed: '+err.message,'error');
+  }
+}
+
+// ── Exercise completion ───────────────────────────────────────────────────────
+async function doCompleteExercise(roadmapId, exId, curDone){
+  const newDone = !curDone;
+  const cb  = document.getElementById(`ecb-${exId}`);
+  const row = document.getElementById(`er-${exId}`);
+  const et  = document.getElementById(`et-${exId}`);
+
+  if(cb){ cb.classList.add('loading-cb'); cb.innerHTML='⏳'; }
+
+  try {
+    const res = await api.completeExercise(roadmapId, exId, newDone);
+
+    if(cb){
+      cb.classList.remove('loading-cb');
+      cb.classList.toggle('checked', newDone);
+      cb.innerHTML = newDone ? '✓' : '';
+      cb.setAttribute('onclick',`doCompleteExercise('${roadmapId}','${exId}',${newDone})`);
+    }
+    row?.classList.toggle('row-done', newDone);
+    et?.classList.toggle('done-text', newDone);
+
+    if(res.progress) applyProgress(res.progress);
+    showToast(newDone ? '✅ Exercise done!' : '↩ Marked incomplete', newDone?'success':'info', 1800);
+  } catch(err){
+    if(cb){ cb.classList.remove('loading-cb'); cb.classList.toggle('checked',curDone); cb.innerHTML=curDone?'✓':''; }
+    showToast('Failed: '+err.message,'error');
+  }
+}
+
+// ── Ask AI ────────────────────────────────────────────────────────────────────
+function askAI(ctxQ){
+  window.location.href = `/mentor.html?${ctxQ}`;
+}
+
+// ── Legacy phase slider ───────────────────────────────────────────────────────
+async function updateLegacy(roadmapId, phaseIndex, value){
+  try {
+    await api.updateProgress({ roadmapId, phaseIndex, progressPercentage: parseInt(value) });
+    showToast('Saved','success',1200);
+  } catch(err){ showToast('Failed: '+err.message,'error'); }
+}
+
+// ── Generate roadmap ──────────────────────────────────────────────────────────
+async function generateRoadmap(){
+  const btn = document.getElementById('gen-btn');
+  setLoading(btn, true, 'Generating…');
+  document.getElementById('rm-content').innerHTML = `
+    <div style="text-align:center;padding:5rem 2rem">
+      <div class="loading-spinner" style="width:52px;height:52px;border-width:3px;margin:0 auto 1.5rem"></div>
+      <h3 style="margin-bottom:.5rem">Generating Your Personalized Roadmap</h3>
+      <p class="text-muted">AI is building your week-by-week plan with topics, exercises, and resources…</p>
+      <p class="text-muted" style="font-size:.78rem;margin-top:.5rem">This may take 20–40 seconds</p>
+    </div>`;
+  try {
+    const res = await api.generateRoadmap(ctxCareerId, ctxJourneyId);
+    ctxJourneyId = ctxJourneyId || res.roadmap?.journeyId;
     renderRoadmap(res.roadmap);
-    showToast(res.aiAvailable ? '✨ AI roadmap generated!' : 'System roadmap generated (configure AI for personalized plan)', res.aiAvailable ? 'success' : 'warning');
-  } catch (err) {
-    document.getElementById('roadmap-content').innerHTML = `
+    showToast(
+      res.aiAvailable ? '✨ AI roadmap ready!' : '⚙️ System roadmap created — configure AI for personalized plan',
+      res.aiAvailable ? 'success' : 'warning', 4000
+    );
+  } catch(err){
+    document.getElementById('rm-content').innerHTML = `
       <div class="alert alert-error" style="margin-bottom:1rem">${err.message}</div>
-      <div class="empty-state">
-        <p>Make sure you've completed an assessment first.</p>
-        <a href="/assessment.html" class="btn btn-primary">Take Assessment</a>
-      </div>
-    `;
-  } finally {
-    setLoading(btn, false);
-  }
+      <div class="card" style="text-align:center;padding:1.5rem">
+        <p class="text-muted" style="margin-bottom:1rem">Complete an assessment first, then generate your roadmap.</p>
+        <div style="display:flex;gap:.625rem;justify-content:center;flex-wrap:wrap">
+          <a href="/assessment.html${ctxJourneyId?'?journeyId='+ctxJourneyId:''}" class="btn btn-primary">📝 Take Assessment</a>
+          ${urlJourneyId?'<a href="/history.html" class="btn btn-ghost">← History</a>':''}
+        </div>
+      </div>`;
+  } finally { setLoading(btn,false); }
 }
 
-async function recalculateRoadmap() {
-  const btn = document.getElementById('recalc-btn');
-  setLoading(btn, true, 'Recalculating...');
+// ── Load ──────────────────────────────────────────────────────────────────────
+async function loadRoadmap(){
   try {
-    const res = await api.recalculateRoadmap();
-    renderRoadmap(res.roadmap);
-    showToast('Roadmap updated based on latest assessment!', 'success');
-  } catch (err) {
-    showToast(err.message, 'error');
-  } finally {
-    setLoading(btn, false);
-  }
-}
-
-async function loadRoadmap() {
-  try {
-    const res = await api.getRoadmap();
-    if (res.roadmap) {
+    const res = await api.getRoadmap(ctxCareerId, ctxJourneyId);
+    if(res.roadmap){
       renderRoadmap(res.roadmap);
     } else {
-      document.getElementById('roadmap-content').innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">🗺️</div>
-          <h3>No Roadmap Yet</h3>
-          <p>Complete an assessment, then generate your personalized AI learning roadmap.</p>
-          <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
-            <a href="/assessment.html" class="btn btn-outline">📝 Take Assessment</a>
+      document.getElementById('rm-content').innerHTML = `
+        <div style="text-align:center;padding:4rem">
+          <div style="font-size:3.5rem;margin-bottom:1rem">🗺️</div>
+          <h3 style="margin-bottom:.5rem">No Roadmap Yet</h3>
+          <p class="text-muted" style="margin-bottom:1.5rem">Complete an assessment, then generate your personalized learning roadmap.</p>
+          <div style="display:flex;gap:.625rem;justify-content:center;flex-wrap:wrap">
+            <a href="/assessment.html${ctxJourneyId?'?journeyId='+ctxJourneyId:''}" class="btn btn-outline">📝 Take Assessment</a>
             <button class="btn btn-primary" onclick="generateRoadmap()">✨ Generate Roadmap</button>
+            ${urlJourneyId?'<a href="/history.html" class="btn btn-ghost">← History</a>':''}
           </div>
-        </div>
-      `;
+        </div>`;
     }
-  } catch (err) {
-    document.getElementById('roadmap-content').innerHTML = `
-      <div class="alert alert-error">Failed to load roadmap: ${err.message}</div>
-    `;
+  } catch(err){
+    document.getElementById('rm-content').innerHTML = `
+      <div class="alert alert-error">Failed to load roadmap: ${err.message}</div>`;
   }
 }
 
