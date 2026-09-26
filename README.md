@@ -2,21 +2,24 @@
 
 **AI-Powered Adaptive Skill Gap Analyser & Personalized Career Roadmap**
 
-A full-stack web application that helps students and job seekers identify their current skill levels, calculate precise skill gaps against industry requirements, generate AI-powered personalized learning roadmaps, and get guidance from an AI Career Mentor.
+A full-stack web application that helps students and job seekers
+identify their current skill levels, calculate precise skill gaps
+against industry requirements, generate AI-powered personalized learning
+roadmaps, and get guidance from an AI Career Mentor.
 
----
+------------------------------------------------------------------------
 
 ## 📋 Table of Contents
 
-1. [Project Overview](#project-overview)
-2. [Features](#features)
-3. [Architecture](#architecture)
-4. [Technology Stack](#technology-stack)
-5. [Folder Structure](#folder-structure)
-6. [Prerequisites](#prerequisites)
-7. [Installation](#installation)
-8. [Environment Variables](#environment-variables)
-9. [MongoDB Setup](#mongodb-setup)
+1.  [Project Overview](#project-overview)
+2.  [Features](#features)
+3.  [Architecture](#architecture)
+4.  [Technology Stack](#technology-stack)
+5.  [Folder Structure](#folder-structure)
+6.  [Prerequisites](#prerequisites)
+7.  [Installation](#installation)
+8.  [Environment Variables](#environment-variables)
+9.  [MongoDB Setup](#mongodb-setup)
 10. [AI API Setup](#ai-api-setup)
 11. [Database Seeding](#database-seeding)
 12. [Running the Application](#running-the-application)
@@ -27,182 +30,198 @@ A full-stack web application that helps students and job seekers identify their 
 17. [Running Tests](#running-tests)
 18. [Troubleshooting](#troubleshooting)
 
----
+------------------------------------------------------------------------
 
 ## Project Overview
 
 AI Career Navigator guides users through this complete lifecycle:
 
-```
-Register → Profile → Select Career → Adaptive Assessment → Scoring
-→ Skill Gap Analysis → Personalized Roadmap → AI Mentor
-→ Progress Tracking → Reassessment → Adaptive Roadmap → Repeat
-```
+    Register → Profile → Select Career → Career Journey → Adaptive Assessment → Scoring
+    → Skill Gap Analysis → Personalized Roadmap → AI Mentor
+    → Progress Tracking → Reassessment → Adaptive Roadmap → Repeat
 
-**Key design principle:** Core functionality (scoring, gap analysis, progress) is fully deterministic and works without AI. AI enhances the experience with personalized roadmaps and mentor conversations.
+**Key design principle:** Core functionality (scoring, gap analysis,
+progress) is fully deterministic and works without AI. AI enhances the
+experience with personalized roadmaps and mentor conversations.
 
----
+------------------------------------------------------------------------
 
 ## Features
 
-- **Adaptive Skill Assessment** — Questions adjust difficulty based on performance (Easy → Medium → Hard and back)
-- **Precise Skill Gap Analysis** — Numerically calculates gap between your level and career requirements
-- **10 Career Paths** — Full Stack, Frontend, Backend, Data Science, AI/ML, Cybersecurity, Cloud, Blockchain, Software Dev, Data Analysis
-- **25+ Skills Tracked** — JavaScript, React, Python, ML, SQL, Docker, Blockchain, and more
-- **100+ Assessment Questions** — Multi-difficulty, per-skill, with explanations
-- **AI-Generated Roadmap** — Personalized phases based on your specific gaps
-- **AI Career Mentor** — Context-aware chat knowing your skills, gaps, and goals
-- **Progress Tracking** — Phase-by-phase progress with percentage sliders
-- **Reassessment & Adaptation** — Retake assessment; roadmap adapts to new skill levels
-- **Responsive UI** — Works on desktop, tablet, and mobile
-- **JWT Authentication** — Secure, stateless auth with bcrypt password hashing
-- **Graceful AI Fallback** — App works fully even when AI API is unavailable
+-   **Adaptive Skill Assessment** --- Questions adjust difficulty based
+    on performance (Easy → Medium → Hard and back)
+-   **Precise Skill Gap Analysis** --- Numerically calculates gap
+    between your level and career requirements
+-   **10 Career Paths** --- Full Stack, Frontend, Backend, Data Science,
+    AI/ML, Cybersecurity, Cloud, Blockchain, Software Dev, Data Analysis
+-   **25+ Skills Tracked** --- JavaScript, React, Python, ML, SQL,
+    Docker, Blockchain, and more
+-   **100+ Assessment Questions** --- Multi-difficulty, per-skill, with
+    explanations
+-   **AI-Generated Roadmap** --- Personalized phases based on your
+    specific gaps
+-   **Mini AI Career Mentor** --- Context-aware chat knowing your
+    skills, gaps, goals, roadmap, and current career journey
+-   **Progress Tracking** --- Phase → week → topic completion with
+    persistent MongoDB progress
+-   **Reassessment & Adaptation** --- Retake assessment;
+    journey-specific results and roadmaps adapt to new skill levels
+-   **Responsive UI** --- Works on desktop, tablet, and mobile
+-   **JWT Authentication** --- Secure, stateless auth with bcrypt
+    password hashing
+-   **Multi-Career Journeys** --- Maintain separate assessments,
+    results, roadmaps, mentor context, and progress for multiple career
+    goals
+-   **Career History** --- Review journeys, assessment attempts, skill
+    gaps, roadmap progress, mentor summary, and recent activity
+-   **Graceful AI Fallback** --- Core assessment and skill-gap
+    functionality remains deterministic
 
----
+------------------------------------------------------------------------
 
 ## Architecture
 
-```
-Browser (HTML + CSS + Vanilla JS)
-        │
-        │ REST API (JSON over HTTP)
-        ▼
-Node.js + Express.js Backend
-        │
-   ┌────┴────┐
-   ▼         ▼
-MongoDB    AI Service Layer
-(Mongoose)     │
-           ┌───┴───┐
-           ▼       ▼
-      Anthropic   OpenAI
-      Claude API  GPT API
-```
+    Browser (HTML + CSS + Vanilla JS)
+            │
+            │ REST API (JSON over HTTP)
+            ▼
+    Node.js + Express.js Backend
+            │
+       ┌────┴────┐
+       ▼         ▼
+    MongoDB    AI Service Layer
+    (Mongoose)     │
+               ┌───┴───┐
+               ▼       ▼
+          Anthropic   OpenAI
+          Claude API  GPT API
 
 **Backend layers:**
-```
-Routes → Controllers → Services → Models (MongoDB)
-                    ↘
-                  AI Service → LLM Provider
-```
 
----
+    Routes → Controllers → Services → Models (MongoDB)
+                        ↘
+                      AI Service → LLM Provider
+
+------------------------------------------------------------------------
 
 ## Technology Stack
 
-| Layer        | Technology                                    |
-|-------------|-----------------------------------------------|
-| Frontend    | HTML5, CSS3, Vanilla JavaScript, Fetch API    |
-| Backend     | Node.js 18+, Express.js 4                    |
-| Database    | MongoDB (local or Atlas), Mongoose 8          |
-| Auth        | JWT (jsonwebtoken), bcryptjs                  |
-| AI          | Anthropic Claude (default) or OpenAI GPT     |
-| Testing     | Jest                                          |
+  Layer      Technology
+  ---------- --------------------------------------------
+  Frontend   HTML5, CSS3, Vanilla JavaScript, Fetch API
+  Backend    Node.js 18+, Express.js 4
+  Database   MongoDB (local or Atlas), Mongoose 8
+  Auth       JWT (jsonwebtoken), bcryptjs
+  AI         Groq API (`openai/gpt-oss-120b`)
+  Testing    Jest
 
----
+------------------------------------------------------------------------
 
 ## Folder Structure
 
-```
-ai-career-navigator/
-│
-├── frontend/                  # Static HTML/CSS/JS frontend
-│   ├── index.html             # Landing page
-│   ├── login.html             # Login page
-│   ├── register.html          # Registration page
-│   ├── dashboard.html         # Main dashboard
-│   ├── profile.html           # Profile & career goal
-│   ├── assessment.html        # Adaptive skill assessment
-│   ├── results.html           # Skill gap analysis results
-│   ├── roadmap.html           # Learning roadmap
-│   ├── mentor.html            # AI Career Mentor chat
-│   ├── css/
-│   │   └── main.css           # Complete design system
-│   └── js/
-│       ├── api.js             # API helper + utilities
-│       └── sidebar.js         # Shared sidebar component
-│
-├── backend/
-│   ├── server.js              # Express app entry point
-│   ├── config/
-│   │   └── database.js        # MongoDB connection
-│   ├── models/
-│   │   ├── User.js            # User schema
-│   │   ├── Skill.js           # Skill schema
-│   │   ├── Career.js          # Career + requirements schema
-│   │   ├── Question.js        # Assessment question schema
-│   │   ├── Assessment.js      # In-progress assessment state
-│   │   ├── AssessmentResult.js # Completed result + gaps
-│   │   ├── Roadmap.js         # Learning roadmap schema
-│   │   └── ChatSession.js     # AI mentor conversation schema
-│   ├── controllers/
-│   │   ├── authController.js
-│   │   ├── profileController.js
-│   │   ├── careerController.js
-│   │   ├── skillController.js
-│   │   ├── assessmentController.js
-│   │   ├── roadmapController.js
-│   │   ├── mentorController.js
-│   │   └── dashboardController.js
-│   ├── routes/
-│   │   ├── auth.js
-│   │   ├── profile.js
-│   │   ├── careers.js
-│   │   ├── skills.js
-│   │   ├── assessment.js
-│   │   ├── roadmap.js
-│   │   ├── mentor.js
-│   │   └── dashboard.js
-│   ├── services/
-│   │   ├── aiService.js       # AI abstraction layer (Anthropic/OpenAI)
-│   │   └── assessmentEngine.js # Adaptive scoring + gap calculation
-│   ├── middleware/
-│   │   ├── auth.js            # JWT protection middleware
-│   │   └── errorHandler.js    # Global error handler
-│   ├── utils/
-│   │   └── helpers.js
-│   └── validators/
-│       └── index.js
-│
-├── seed/                      # Database seed data
-│   ├── index.js               # Main seed runner
-│   ├── skillsData.js          # 25 skills
-│   ├── careersData.js         # 10 careers with requirements
-│   └── questions/
-│       ├── htmlCssJs.js       # HTML, CSS, JavaScript questions
-│       ├── reactNode.js       # React, Node.js, Express, MongoDB, REST, Git
-│       └── other.js           # Python, DSA, ML, SQL, Cybersecurity, Cloud, Blockchain
-│
-├── tests/
-│   └── engine.test.js         # 45 unit tests
-│
-├── .env.example               # Environment variable template
-├── jest.config.json
-├── package.json
-├── README.md
-└── DEVELOPER_GUIDE.md
-```
+    ai-career-navigator/
+    │
+    ├── frontend/                  # Static HTML/CSS/JS frontend
+    │   ├── index.html             # Landing page
+    │   ├── login.html             # Login page
+    │   ├── register.html          # Registration page
+    │   ├── dashboard.html         # Main dashboard
+    │   ├── profile.html           # Profile & career goal
+    │   ├── assessment.html        # Adaptive skill assessment
+    │   ├── results.html           # Skill gap analysis results
+    │   ├── roadmap.html           # Learning roadmap
+    │   ├── mentor.html            # Mini AI Career Mentor chat
+    │   ├── history.html           # Multi-career history
+    │   ├── css/
+    │   │   └── main.css           # Complete design system
+    │   └── js/
+    │       ├── api.js             # API helper + utilities
+    │       └── sidebar.js         # Shared sidebar component
+    │
+    ├── backend/
+    │   ├── server.js              # Express app entry point
+    │   ├── config/
+    │   │   └── database.js        # MongoDB connection
+    │   ├── models/
+    │   │   ├── User.js            # User schema
+    │   │   ├── Skill.js           # Skill schema
+    │   │   ├── Career.js          # Career + requirements schema
+    │   │   ├── Question.js        # Assessment question schema
+    │   │   ├── Assessment.js      # In-progress assessment state
+    │   │   ├── AssessmentResult.js # Completed result + gaps
+    │   │   ├── Roadmap.js         # Learning roadmap schema
+    │   │   └── ChatSession.js     # AI mentor conversation schema
+    │   ├── controllers/
+    │   │   ├── authController.js
+    │   │   ├── profileController.js
+    │   │   ├── careerController.js
+    │   │   ├── skillController.js
+    │   │   ├── assessmentController.js
+    │   │   ├── roadmapController.js
+    │   │   ├── mentorController.js
+    │   │   ├── dashboardController.js
+    │   │   └── journeyController.js
+    │   ├── routes/
+    │   │   ├── auth.js
+    │   │   ├── profile.js
+    │   │   ├── careers.js
+    │   │   ├── skills.js
+    │   │   ├── assessment.js
+    │   │   ├── roadmap.js
+    │   │   ├── mentor.js
+    │   │   ├── dashboard.js
+    │   │   └── journey.js
+    │   ├── services/
+    │   │   ├── aiService.js       # Groq AI integration and roadmap/mentor generation
+    │   │   └── assessmentEngine.js # Adaptive scoring + gap calculation
+    │   ├── middleware/
+    │   │   ├── auth.js            # JWT protection middleware
+    │   │   └── errorHandler.js    # Global error handler
+    │   ├── utils/
+    │   │   └── helpers.js
+    │   └── validators/
+    │       └── index.js
+    │
+    ├── seed/                      # Database seed data
+    │   ├── index.js               # Main seed runner
+    │   ├── skillsData.js          # 25 skills
+    │   ├── careersData.js         # 10 careers with requirements
+    │   └── questions/
+    │       ├── htmlCssJs.js       # HTML, CSS, JavaScript questions
+    │       ├── reactNode.js       # React, Node.js, Express, MongoDB, REST, Git
+    │       └── other.js           # Python, DSA, ML, SQL, Cybersecurity, Cloud, Blockchain
+    │
+    ├── tests/
+    │   └── engine.test.js         # 45 unit tests
+    │
+    ├── .env.example               # Environment variable template
+    ├── jest.config.json
+    ├── package.json
+    ├── README.md
+    └── DEVELOPER_GUIDE.md
 
----
+------------------------------------------------------------------------
 
 ## Prerequisites
 
-- **Node.js** v18 or higher — https://nodejs.org
-- **MongoDB** v6+ (local) or a **MongoDB Atlas** account (cloud)
-- **AI API Key** — Anthropic Claude or OpenAI (optional but recommended)
+-   **Node.js** v18 or higher --- https://nodejs.org
+-   **MongoDB** v6+ (local) or a **MongoDB Atlas** account (cloud)
+-   **Groq API Key** --- Required for AI-powered roadmap and mentor
+    features
 
 Verify your setup:
-```bash
+
+``` bash
 node --version    # Should show v18+
 npm --version     # Should show 9+
 mongod --version  # If using local MongoDB
 ```
 
----
+------------------------------------------------------------------------
 
 ## Installation
 
-```bash
+``` bash
 # 1. Clone or extract the project
 cd ai-career-navigator
 
@@ -224,13 +243,13 @@ npm run dev
 
 Open **http://localhost:5000** in your browser.
 
----
+------------------------------------------------------------------------
 
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in your values:
 
-```env
+``` env
 # Server
 PORT=5000
 NODE_ENV=development
@@ -244,119 +263,122 @@ JWT_SECRET=change_this_to_a_long_random_secret_string
 JWT_EXPIRES_IN=7d
 
 # AI Provider — choose anthropic or openai
-AI_PROVIDER=anthropic
-
-# Anthropic Claude (recommended)
-ANTHROPIC_API_KEY=sk-ant-api03-...
-ANTHROPIC_MODEL=claude-haiku-4-5-20251001
-
-# OpenAI (alternative — comment out Anthropic vars and use these)
-# AI_PROVIDER=openai
-# OPENAI_API_KEY=sk-proj-...
-# OPENAI_MODEL=gpt-3.5-turbo
+AI_PROVIDER=groq
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=openai/gpt-oss-120b
 ```
 
 > ⚠️ **Never commit your `.env` file to version control.**
 
----
+------------------------------------------------------------------------
 
 ## MongoDB Setup
 
-### Option A — Local MongoDB
+### Option A --- Local MongoDB
 
-1. Install MongoDB Community Edition: https://www.mongodb.com/try/download/community
-2. Start the service:
-   ```bash
-   # macOS / Linux
-   mongod --dbpath /data/db
+1.  Install MongoDB Community Edition:
+    https://www.mongodb.com/try/download/community
 
-   # Windows (as a service)
-   net start MongoDB
-   ```
-3. Set in `.env`:
-   ```
-   MONGODB_URI=mongodb://localhost:27017/ai_career_navigator
-   ```
+2.  Start the service:
 
-### Option B — MongoDB Atlas (Cloud, Free Tier)
+    ``` bash
+    # macOS / Linux
+    mongod --dbpath /data/db
 
-1. Go to https://cloud.mongodb.com and create a free account
-2. Create a free **M0** cluster
-3. In **Database Access** → Add user with password
-4. In **Network Access** → Add IP `0.0.0.0/0` (allow all) or your IP
-5. Click **Connect** → **Connect your application** → copy the URI
-6. Set in `.env`:
-   ```
-   MONGODB_URI=mongodb+srv://youruser:yourpassword@cluster0.abc.mongodb.net/ai_career_navigator
-   ```
+    # Windows (as a service)
+    net start MongoDB
+    ```
 
----
+3.  Set in `.env`:
+
+        MONGODB_URI=mongodb://localhost:27017/ai_career_navigator
+
+### Option B --- MongoDB Atlas (Cloud, Free Tier)
+
+1.  Go to https://cloud.mongodb.com and create a free account
+
+2.  Create a free **M0** cluster
+
+3.  In **Database Access** → Add user with password
+
+4.  In **Network Access** → Add IP `0.0.0.0/0` (allow all) or your IP
+
+5.  Click **Connect** → **Connect your application** → copy the URI
+
+6.  Set in `.env`:
+
+        MONGODB_URI=mongodb+srv://youruser:yourpassword@cluster0.abc.mongodb.net/ai_career_navigator
+
+------------------------------------------------------------------------
 
 ## AI API Setup
 
-### Option A — Anthropic Claude (Recommended)
+### Groq
 
-1. Go to https://console.anthropic.com
-2. Sign up and go to **API Keys**
-3. Create a new key
-4. In `.env`:
-   ```
-   AI_PROVIDER=anthropic
-   ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
-   ANTHROPIC_MODEL=claude-haiku-4-5-20251001
-   ```
+1.  Go to https://console.anthropic.com
 
-### Option B — OpenAI GPT
+2.  Sign up and go to **API Keys**
 
-1. Go to https://platform.openai.com/api-keys
-2. Create a new secret key
-3. In `.env`:
-   ```
-   AI_PROVIDER=openai
-   OPENAI_API_KEY=sk-proj-your-key-here
-   OPENAI_MODEL=gpt-3.5-turbo
-   ```
+3.  Create a new key
 
-### No API Key?
+4.  In `.env`:
 
-The app still works fully without an AI key:
-- Assessment, scoring, skill gap analysis — all work normally
-- Roadmap generation falls back to a system-generated roadmap based on your gaps
-- AI Mentor shows a helpful fallback message
-- Everything else is unaffected
+        AI_PROVIDER=anthropic
+        ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
+        ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 
----
+### Option B --- OpenAI GPT
+
+1.  Go to https://platform.openai.com/api-keys
+
+2.  Create a new secret key
+
+3.  In `.env`:
+
+        AI_PROVIDER=openai
+        OPENAI_API_KEY=sk-proj-your-key-here
+        OPENAI_MODEL=gpt-3.5-turbo
+
+### AI unavailable?
+
+Core deterministic features continue to work without a successful AI
+response: - Assessment, scoring, skill gap analysis --- all work
+normally - Assessment, scoring, skill-gap analysis, and stored progress
+remain available - AI-powered roadmap/mentor responses may use the
+application's fallback/error handling
+
+------------------------------------------------------------------------
 
 ## Database Seeding
 
 Run once after setting `MONGODB_URI` in `.env`:
 
-```bash
+``` bash
 npm run seed
 ```
 
-This inserts:
-- **25 skills** (JavaScript, React, Python, ML, SQL, Docker, Blockchain, etc.)
-- **10 careers** with realistic required skill levels and priorities
-- **100+ questions** across 3 difficulty levels for all skills
+This inserts: - **25 skills** (JavaScript, React, Python, ML, SQL,
+Docker, Blockchain, etc.) - **10 careers** with realistic required skill
+levels and priorities - **126 questions** across 3 difficulty levels for
+all skills
 
-Re-running seed **replaces** all existing seed data (users and results are preserved).
+Re-running seed **replaces** all existing seed data (users and results
+are preserved).
 
 Expected output:
-```
-✅ MongoDB Connected
-🌱 Seeding skills...   ✔ Inserted 25 skills
-🌱 Seeding careers...  ✔ Inserted 10 careers
-🌱 Seeding questions... ✔ Inserted 107 questions
-   Easy: 38  Medium: 49  Hard: 20
-✅ Database seeded successfully!
-```
 
----
+    ✅ MongoDB Connected
+    🌱 Seeding skills...   ✔ Inserted 25 skills
+    🌱 Seeding careers...  ✔ Inserted 10 careers
+    🌱 Seeding questions... ✔ Inserted 126 questions
+       Easy: 47  Medium: 51  Hard: 28
+    ✅ Database seeded successfully!
+
+------------------------------------------------------------------------
 
 ## Running the Application
 
-```bash
+``` bash
 # Production mode
 npm start
 
@@ -366,135 +388,287 @@ npm run dev
 
 The server serves both the API and the frontend:
 
-| URL                           | Description              |
-|-------------------------------|--------------------------|
-| http://localhost:5000          | Landing page             |
-| http://localhost:5000/login.html | Login page            |
-| http://localhost:5000/register.html | Registration       |
-| http://localhost:5000/dashboard.html | Dashboard         |
-| http://localhost:5000/api/health | API health check      |
+  URL                                    Description
+  -------------------------------------- ------------------
+  http://localhost:5000                  Landing page
+  http://localhost:5000/login.html       Login page
+  http://localhost:5000/register.html    Registration
+  http://localhost:5000/dashboard.html   Dashboard
+  http://localhost:5000/api/health       API health check
 
----
+------------------------------------------------------------------------
+
+## Multi-Career Journey System
+
+Users can maintain separate career journeys instead of having one global
+career state.
+
+Each journey stores its own:
+
+-   Career
+-   Existing/selected skills
+-   Assessment attempts
+-   Assessment results
+-   Skill gaps
+-   Roadmap
+-   Roadmap progress
+-   Mentor context
+-   Journey status
+-   Recent activity
+
+Example:
+
+``` text
+User
+├── AI/ML Engineer
+│   ├── Assessment
+│   ├── Results
+│   ├── Roadmap
+│   └── Mini AI Mentor
+│
+└── Backend Developer
+    ├── Assessment
+    ├── Results
+    ├── Roadmap
+    └── Mini AI Mentor
+```
+
+`journeyId` is propagated through assessment, results, roadmap and
+mentor flows so data from one career does not incorrectly appear in
+another career.
+
+### Journey statuses
+
+``` text
+NOT_STARTED
+IN_PROGRESS
+COMPLETED
+PAUSED
+```
+
+------------------------------------------------------------------------
+
+## Roadmap Progress Tracking
+
+The roadmap is organized as:
+
+``` text
+Phase
+  ↓
+Week
+  ↓
+Topic
+  ↓
+Completed / Not Completed
+```
+
+Progress is calculated upward:
+
+``` text
+Topic completion
+      ↓
+Week progress
+      ↓
+Phase progress
+      ↓
+Overall roadmap progress
+```
+
+Progress is persisted in MongoDB and remains available after page
+refresh and login/logout.
+
+The roadmap can also contain learning-resource links and an **Ask AI**
+flow for contextual learning guidance.
+
+------------------------------------------------------------------------
+
+## Career History
+
+`history.html` provides a consolidated view of the user's career
+journeys.
+
+It includes:
+
+-   Overall progress
+-   Journey cards
+-   Journey status
+-   Selected skills
+-   Assessment history
+-   Scores and skill gaps
+-   Roadmap phase progress
+-   Mini AI Mentor summary
+-   Recent activity
+-   Journey details
+
+This page is especially useful when a user is exploring more than one
+career path.
+
+------------------------------------------------------------------------
+
+## Current AI Configuration
+
+The current project uses:
+
+``` env
+AI_PROVIDER=groq
+GROQ_MODEL=openai/gpt-oss-120b
+```
+
+The AI service supports the project's current Groq-based roadmap and
+mentor workflows.
+
+The API key must remain in `.env` or the deployment platform's
+environment variables and must never be committed to Git.
+
+------------------------------------------------------------------------
+
+## Current Production Deployment
+
+The current deployed application is hosted on Render:
+
+``` text
+https://ai-career-navigator-9zbd.onrender.com
+```
+
+The GitHub repository is:
+
+``` text
+https://github.com/Prasannadevii/ai-career-navigator
+```
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 
 ## API Overview
 
 All API routes return JSON. Protected routes require:
-```
-Authorization: Bearer <jwt_token>
-```
+
+    Authorization: Bearer <jwt_token>
 
 ### Authentication
-```
-POST /api/auth/register    — Register new user
-POST /api/auth/login       — Login, receive JWT
-GET  /api/auth/me          — Get current user (protected)
-```
+
+    POST /api/auth/register    — Register new user
+    POST /api/auth/login       — Login, receive JWT
+    GET  /api/auth/me          — Get current user (protected)
 
 ### Profile
-```
-GET  /api/profile          — Get full profile
-PUT  /api/profile          — Update profile, career goal, skills
-```
+
+    GET  /api/profile          — Get full profile
+    PUT  /api/profile          — Update profile, career goal, skills
 
 ### Careers & Skills
-```
-GET  /api/careers          — List all active careers
-GET  /api/careers/:id      — Career with skill requirements
-GET  /api/skills           — List all skills
-```
+
+    GET  /api/careers          — List all active careers
+    GET  /api/careers/:id      — Career with skill requirements
+    GET  /api/skills           — List all skills
 
 ### Assessment (Adaptive)
-```
-POST /api/assessment/start             — Start new assessment
-GET  /api/assessment/:id/question?index=N — Get question N
-POST /api/assessment/:id/answer        — Submit answer, get feedback
-POST /api/assessment/:id/submit        — Calculate & save results
-GET  /api/assessment/:id/result        — Get result by assessment ID
-GET  /api/assessment/latest            — Latest result for current user
-GET  /api/assessment/history           — All past results
-```
+
+    POST /api/assessment/start             — Start new assessment
+    GET  /api/assessment/:id/question?index=N — Get question N
+    POST /api/assessment/:id/answer        — Submit answer, get feedback
+    POST /api/assessment/:id/submit        — Calculate & save results
+    GET  /api/assessment/:id/result        — Get result by assessment ID
+    GET  /api/assessment/latest            — Latest result for current user
+    GET  /api/assessment/history           — All past results
 
 ### Dashboard & Skill Gaps
-```
-GET  /api/dashboard          — Complete dashboard data
-GET  /api/dashboard/skill-gaps — Current skill gaps
-```
+
+    GET  /api/dashboard          — Complete dashboard data
+    GET  /api/dashboard/skill-gaps — Current skill gaps
 
 ### Roadmap
-```
-POST /api/roadmap/generate     — AI-generate personalized roadmap
-GET  /api/roadmap              — Get active roadmap
-GET  /api/roadmap/all          — All roadmap versions
-PUT  /api/roadmap/progress     — Update phase progress/status
-POST /api/roadmap/recalculate  — Regenerate after reassessment
-```
+
+    POST /api/roadmap/generate     — AI-generate personalized roadmap
+    GET  /api/roadmap              — Get active roadmap
+    GET  /api/roadmap/all          — All roadmap versions
+    PUT  /api/roadmap/progress     — Update phase progress/status
+    POST /api/roadmap/recalculate  — Regenerate after reassessment
+
+### Career Journey
+
+    GET  /api/journey/history
+    GET  /api/journey
+    POST /api/journey
+    GET  /api/journey/:id
+    PUT  /api/journey/:id
+    GET  /api/journey/:id/assessments
+    POST /api/journey/:id/sync-progress
 
 ### AI Mentor
-```
-POST /api/mentor/chat           — Send message, receive AI response
-GET  /api/mentor/history        — List past sessions
-GET  /api/mentor/session/:id    — Get full session messages
-DELETE /api/mentor/session/:id  — Archive session
-```
 
----
+    POST /api/mentor/chat           — Send message, receive AI response
+    GET  /api/mentor/history        — List past sessions
+    GET  /api/mentor/session/:id    — Get full session messages
+    DELETE /api/mentor/session/:id  — Archive session
+
+------------------------------------------------------------------------
 
 ## Example User Flow
 
 Following the spec example (Arun, Full Stack Developer):
 
-1. **Register** at `/register.html` with name, email, password
-2. **Set profile** at `/profile.html` — select Full Stack Developer as career goal
-3. **Take assessment** at `/assessment.html` — 30 adaptive questions
-4. **View results** — Example scores:
-   ```
-   HTML: 90%  (Expert)      CSS: 80% (Advanced)
-   JavaScript: 60% (Int.)   React: 25% (Beginner)
-   Node.js: 35% (Beginner)  MongoDB: 40% (Int.)
-   ```
-5. **Skill gaps calculated** deterministically:
-   ```
-   HTML:  required=70, current=90, gap=0  (✓ Met)
-   CSS:   required=70, current=80, gap=0  (✓ Met)
-   JS:    required=80, current=60, gap=20 (Low)
-   React: required=75, current=25, gap=50 (High)
-   Node:  required=70, current=35, gap=35 (Medium)
-   Mongo: required=60, current=40, gap=20 (Low)
-   ```
-6. **Career Readiness** = 72% (deterministic calculation)
-7. **AI generates roadmap** with phases prioritizing React (gap 50) → Node.js (35) → JavaScript (20) → MongoDB (20)
-8. **User marks progress** on each phase using the slider
-9. **AI Mentor answers** questions like "What should I learn first in React?"
-10. **Reassessment** after learning — new scores update gaps and roadmap adapts
+1.  **Register** at `/register.html` with name, email, password
 
----
+2.  **Set profile** at `/profile.html` --- select Full Stack Developer
+    as career goal
+
+3.  **Take assessment** at `/assessment.html` --- 30 adaptive questions
+
+4.  **View results** --- Example scores:
+
+        HTML: 90%  (Expert)      CSS: 80% (Advanced)
+        JavaScript: 60% (Int.)   React: 25% (Beginner)
+        Node.js: 35% (Beginner)  MongoDB: 40% (Int.)
+
+5.  **Skill gaps calculated** deterministically:
+
+        HTML:  required=70, current=90, gap=0  (✓ Met)
+        CSS:   required=70, current=80, gap=0  (✓ Met)
+        JS:    required=80, current=60, gap=20 (Low)
+        React: required=75, current=25, gap=50 (High)
+        Node:  required=70, current=35, gap=35 (Medium)
+        Mongo: required=60, current=40, gap=20 (Low)
+
+6.  **Career Readiness** = 72% (deterministic calculation)
+
+7.  **AI generates roadmap** with phases prioritizing React (gap 50) →
+    Node.js (35) → JavaScript (20) → MongoDB (20)
+
+8.  **User marks progress** on each phase using the slider
+
+9.  **AI Mentor answers** questions like "What should I learn first in
+    React?"
+
+10. **Reassessment** after learning --- new scores update gaps and
+    roadmap adapts
+
+------------------------------------------------------------------------
 
 ## How Adaptive Assessment Works
 
-```
-Start → Easy question
-  ↓ Correct × 2 → Promote to Medium
-  ↓ Correct × 2 → Promote to Hard
-  ↓ Wrong  × 2 → Demote to Medium
-  ↓ Wrong  × 2 → Demote to Easy
+    Start → Easy question
+      ↓ Correct × 2 → Promote to Medium
+      ↓ Correct × 2 → Promote to Hard
+      ↓ Wrong  × 2 → Demote to Medium
+      ↓ Wrong  × 2 → Demote to Easy
 
-Duplicate questions are never shown in the same assessment.
-```
+    Duplicate questions are never shown in the same assessment.
 
 Difficulty transitions (`assessmentEngine.js`):
-```
-consecutiveCorrect >= 2:  easy→medium, medium→hard, hard→hard
-consecutiveWrong   >= 2:  hard→medium, medium→easy, easy→easy
-otherwise:                stay at current difficulty
-```
 
----
+    consecutiveCorrect >= 2:  easy→medium, medium→hard, hard→hard
+    consecutiveWrong   >= 2:  hard→medium, medium→easy, easy→easy
+    otherwise:                stay at current difficulty
+
+------------------------------------------------------------------------
 
 ## How Skill Gap Calculation Works
 
-All calculations are purely deterministic — no AI involved:
+All calculations are purely deterministic --- no AI involved:
 
-```javascript
+``` javascript
 gap = Math.max(0, requiredLevel - currentLevel)
 
 // Example:
@@ -522,11 +696,11 @@ careerReadiness = round(
 )
 ```
 
----
+------------------------------------------------------------------------
 
 ## Running Tests
 
-```bash
+``` bash
 # Run all tests
 npm test
 
@@ -537,59 +711,99 @@ npm test -- --coverage
 npm test -- --watch
 ```
 
-All 45 tests should pass:
-- `classifyProficiency` — 8 tests
-- `classifyGapSeverity` — 10 tests
-- `nextDifficulty` — 8 tests (adaptive engine)
-- `calculateSkillScores` — 3 tests
-- `calculateSkillGaps` — 4 tests
-- `calculateCareerReadiness` — 4 tests (including Arun's example)
-- Registration validation — 4 tests
-- AI graceful failure — 2 tests
+All 45 tests should pass: - `classifyProficiency` --- 8 tests -
+`classifyGapSeverity` --- 10 tests - `nextDifficulty` --- 8 tests
+(adaptive engine) - `calculateSkillScores` --- 3 tests -
+`calculateSkillGaps` --- 4 tests - `calculateCareerReadiness` --- 4
+tests (including Arun's example) - Registration validation --- 4 tests -
+AI graceful failure --- 2 tests
 
----
+------------------------------------------------------------------------
 
 ## Troubleshooting
 
 ### MongoDB connection fails
-```
-❌ MongoDB Connection Error: ...
-```
-- Check `MONGODB_URI` in your `.env`
-- For local: ensure `mongod` is running
-- For Atlas: check IP whitelist and credentials
+
+    ❌ MongoDB Connection Error: ...
+
+-   Check `MONGODB_URI` in your `.env`
+-   For local: ensure `mongod` is running
+-   For Atlas: check IP whitelist and credentials
 
 ### No questions in assessment
-```
-No questions available for this career.
-```
-- Run `npm run seed` to populate the database
+
+    No questions available for this career.
+
+-   Run `npm run seed` to populate the database
 
 ### AI responses not working
-- Check your API key in `.env`
-- Verify `AI_PROVIDER` matches your key type (`anthropic` or `openai`)
-- The app works without AI — you'll see fallback responses
+
+-   Check your API key in `.env`
+-   Verify `AI_PROVIDER` matches your key type (`anthropic` or `openai`)
+-   The app works without AI --- you'll see fallback responses
 
 ### Port already in use
-```
-EADDRINUSE: address already in use :::5000
-```
+
+    EADDRINUSE: address already in use :::5000
+
 Change `PORT=5001` in `.env` (or kill the existing process)
 
 ### JWT errors / redirect loops
-- Clear `localStorage` in browser dev tools
-- Hard refresh with Ctrl+Shift+R
+
+-   Clear `localStorage` in browser dev tools
+-   Hard refresh with Ctrl+Shift+R
 
 ### Seed fails with duplicate key error
-```
-duplicate key error: { name: "JavaScript" }
-```
-This is harmless — seed deletes then re-inserts. If it persists, run:
-```bash
+
+    duplicate key error: { name: "JavaScript" }
+
+This is harmless --- seed deletes then re-inserts. If it persists, run:
+
+``` bash
 # In MongoDB shell
 use ai_career_navigator
 db.skills.drop()
 db.careers.drop()
 db.questions.drop()
 ```
+
 Then re-run `npm run seed`.
+
+------------------------------------------------------------------------
+
+## Author
+
+**Prasannadevi S**\
+Computer Science Student \| Aspiring Full Stack Developer\
+Vellore Institute of Technology (VIT), Vellore
+
+------------------------------------------------------------------------
+
+## ⭐ Project Summary
+
+AI Career Navigator combines deterministic skill assessment with
+AI-powered personalization:
+
+``` text
+User Profile
+     ↓
+Career Selection
+     ↓
+Career Journey
+     ↓
+Adaptive Assessment
+     ↓
+Skill Gap Analysis
+     ↓
+AI Personalized Roadmap
+     ↓
+Topic-Level Progress
+     ↓
+Mini AI Career Mentor
+     ↓
+Career History
+     ↓
+Reassessment
+     ↓
+Continuous Career Development
+```
