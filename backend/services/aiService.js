@@ -905,52 +905,82 @@ For EVERY topic:
 - NEVER invent or fabricate URLs.
 - If you are unsure about a specific deep-page URL, use the official website/domain URL instead of inventing a URL.
 
-Use only these trusted domains:
+CRITICAL: Use ONLY these exact URLs for resources. Copy them exactly — do NOT add article paths, news paths, or sub-pages after the domain:
 
-- docs.python.org
-- numpy.org
-- pandas.pydata.org
-- scikit-learn.org
-- matplotlib.org
-- seaborn.pydata.org
-- scipy.org
-- developer.mozilla.org
-- nodejs.org
-- reactjs.org
-- react.dev
-- vuejs.org
-- docs.docker.com
-- kubernetes.io
-- cloud.google.com
-- aws.amazon.com
-- learn.microsoft.com
-- freecodecamp.org
-- kaggle.com
-- coursera.org
-- fast.ai
-- github.com
-- git-scm.com
-- tensorflow.org
-- pytorch.org
-- huggingface.co
-- leetcode.com
-- hackerrank.com
-- exercism.org
-- w3schools.com
-- javascript.info
-- learnpython.org
-- realpython.com
-- flask.palletsprojects.com
-- fastapi.tiangolo.com
-- docs.djangoproject.com
-- postgresql.org
-- mongodb.com
-- redis.io
-- graphql.org
-- swagger.io
-- openai.com
-- anthropic.com
-- deeplearning.ai
+https://docs.python.org/3/
+https://numpy.org/doc/
+https://pandas.pydata.org/docs/
+https://scikit-learn.org/stable/
+https://matplotlib.org/stable/
+https://www.tensorflow.org/tutorials
+https://pytorch.org/tutorials/
+https://huggingface.co/docs
+https://fast.ai/
+https://kaggle.com/learn
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide
+https://developer.mozilla.org/en-US/docs/Web/HTML
+https://developer.mozilla.org/en-US/docs/Web/CSS
+https://javascript.info/
+https://www.w3schools.com/python/
+https://www.w3schools.com/js/
+https://www.w3schools.com/html/
+https://www.w3schools.com/css/
+https://www.w3schools.com/sql/
+https://www.w3schools.com/dsa/
+https://www.w3schools.com/react/
+https://www.w3schools.com/nodejs/
+https://www.w3schools.com/django/
+https://www.w3schools.com/mongodb/
+https://www.w3schools.com/git/
+https://react.dev/
+https://vuejs.org/guide/
+https://nodejs.org/en/docs/
+https://expressjs.com/
+https://docs.djangoproject.com/
+https://flask.palletsprojects.com/
+https://fastapi.tiangolo.com/
+https://www.mongodb.com/docs/
+https://www.postgresql.org/docs/
+https://redis.io/docs/
+https://docs.docker.com/
+https://kubernetes.io/docs/
+https://git-scm.com/doc
+https://aws.amazon.com/getting-started/
+https://cloud.google.com/training
+https://learn.microsoft.com/en-us/azure/
+https://www.freecodecamp.org/
+https://leetcode.com/
+https://www.hackerrank.com/
+https://www.khanacademy.org/math/
+https://graphql.org/learn/
+https://swagger.io/docs/
+https://github.com/
+https://docs.soliditylang.org/
+https://ethereum.org/en/developers/docs/
+https://hardhat.org/tutorial
+https://docs.ethers.org/
+https://docs.openzeppelin.com/
+https://web3js.readthedocs.io/
+https://cryptozombies.io/
+https://jestjs.io/docs/getting-started
+https://mochajs.org/
+https://docs.npmjs.com/
+https://owasp.org/
+https://jwt.io/
+https://learning.postman.com/
+https://realpython.com/
+https://learnpython.org/
+https://sqlzoo.net/
+https://learn.mongodb.com/
+https://tutorial.djangogirls.org/
+
+ABSOLUTE RULES for resource URLs:
+- NEVER use freecodecamp.org/news/anything — those article pages give 404
+- NEVER use medium.com/anything 
+- NEVER use dev.to/anything
+- NEVER add paths like /some-specific-article/ after domains
+- If in doubt, use https://www.freecodecamp.org/ (root only)
+- Always use https:// prefix
 
 Return this exact JSON structure:
 
@@ -1045,136 +1075,396 @@ IMPORTANT RULES:
       throw new Error('Invalid roadmap structure: missing phases array');
     }
 
-    // Validate and sanitize resources — remove any with fake/placeholder URLs
-    const KNOWN_SAFE_DOMAINS = [
-  'docs.python.org',
-  'numpy.org',
-  'pandas.pydata.org',
-  'scikit-learn.org',
-  'matplotlib.org',
-  'seaborn.pydata.org',
-  'scipy.org',
-
-    'bitcoin.org',
-  'ethereum.org',
-  'soliditylang.org',
-  'remix.ethereum.org',
-
-  'developer.mozilla.org',
-  'nodejs.org',
-  'reactjs.org',
-  'react.dev',
-  'vuejs.org',
-
-  'docs.docker.com',
-  'docker.com',
-  'kubernetes.io',
-
-  'cloud.google.com',
-  'aws.amazon.com',
-  'learn.microsoft.com',
-
-  'freecodecamp.org',
-  'kaggle.com',
-  'coursera.org',
-  'fast.ai',
-
-  'github.com',
-  'git-scm.com',
-
-  'tensorflow.org',
-  'pytorch.org',
-  'huggingface.co',
-
-  'leetcode.com',
-  'hackerrank.com',
-  'exercism.org',
-
-  'w3schools.com',
-  'javascript.info',
-  'learnpython.org',
-  'realpython.com',
-
-  'flask.palletsprojects.com',
-  'fastapi.tiangolo.com',
-  'docs.djangoproject.com',
-
-  'postgresql.org',
-  'mongodb.com',
-  'redis.io',
-  'graphql.org',
-  'swagger.io',
-
-  'openai.com',
-  'anthropic.com',
-  'deeplearning.ai'
-];
+    // ── URL validation: accept any real https URL, reject placeholders ───────────
+    const PLACEHOLDER_PATTERNS = [
+      /^#$/, /^n\/a$/i, /^no.?link$/i, /^placeholder/i, /^example\.com/i,
+      /^http:\/\/example/, /^https:\/\/example/, /actual-real-url/i,
+      /your-url-here/i, /insert-url/i, /^null$/i, /^undefined$/i
+    ];
+    const FAKE_PATH_PATTERNS = [
+      /\/path\/to\//i, /\/your\//i, /\/link\//i, /\/url\//i
+    ];
+    // Paths that are stable and should be kept as-is
+    const KEEP_PATHS = [
+      'docs.python.org','numpy.org/doc','pandas.pydata.org/docs',
+      'scikit-learn.org/stable','matplotlib.org/stable',
+      'tensorflow.org/tutorials','tensorflow.org/api_docs',
+      'pytorch.org/tutorials','pytorch.org/docs',
+      'react.dev','vuejs.org/guide','nodejs.org/en/docs',
+      'developer.mozilla.org','javascript.info',
+      'flask.palletsprojects.com','fastapi.tiangolo.com',
+      'docs.djangoproject.com','mongodb.com/docs',
+      'postgresql.org/docs','redis.io/docs',
+      'kubernetes.io/docs','docs.docker.com','git-scm.com/doc',
+      'huggingface.co/learn','huggingface.co/docs',
+      'kaggle.com/learn','w3schools.com',
+      'docs.soliditylang.org','hardhat.org/tutorial',
+      'docs.ethers.org','jestjs.io/docs','expressjs.com',
+      'learn.microsoft.com','cloud.google.com/docs',
+      'aws.amazon.com/getting-started',
+      'numpy.org/doc/stable/reference',
+      'graphql.org/learn','swagger.io/docs',
+      'khanacademy.org','leetcode.com','hackerrank.com',
+      'exercism.org','learnpython.org','realpython.com',
+      'fast.ai','nltk.org','ethereum.org','docs.openzeppelin.com',
+      'cryptozombies.io','web3js.readthedocs.io',
+      'docs.ipfs.tech','jestjs.io','mochajs.org',
+      'sqlzoo.net','university.redis.com','docs.npmjs.com',
+      'learning.postman.com','owasp.org','jwt.io',
+      'www.apollographql.com/docs','docs.uniswap.org',
+      'django-girls.org','tutorial.djangogirls.org',
+      'www.youtube.com/playlist'
+    ];
 
     function isValidUrl(url) {
       if (!url || typeof url !== 'string') return false;
-      if (!url.startsWith('http://') && !url.startsWith('https://')) return false;
+      const u = url.trim();
+      if (!u.startsWith('https://') && !u.startsWith('http://')) return false;
+      for (const p of PLACEHOLDER_PATTERNS) if (p.test(u)) return false;
+      for (const p of FAKE_PATH_PATTERNS) if (p.test(u)) return false;
       try {
-        const u = new URL(url);
-        const host = u.hostname.replace(/^www\./, '');
-        return KNOWN_SAFE_DOMAINS.some(d => host === d || host.endsWith('.' + d));
+        const parsed = new URL(u);
+        const host = parsed.hostname;
+        if (!host || host === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(host)) return false;
+        if (!host.includes('.')) return false;
+        return true;
       } catch { return false; }
     }
 
-    function sanitizeResources(resources) {
-  if (!Array.isArray(resources)) return [];
-
-  function normalizeUrl(rawUrl) {
-    if (!rawUrl || typeof rawUrl !== 'string') return '';
-
-    let url = rawUrl.trim();
-
-    // Convert Markdown URL:
-    // [Python Documentation](https://docs.python.org/3/)
-    // into:
-    // https://docs.python.org/3/
-    const markdownMatch = url.match(
-      /^\[.*?\]\((https?:\/\/[^)\s]+)\)$/
-    );
-
-    if (markdownMatch) {
-      url = markdownMatch[1];
+    // Strip sub-paths to avoid 404s — only keep known-stable deep paths
+    function safeUrl(url) {
+      if (!url) return '';
+      try {
+        const u = new URL(url.trim());
+        const fullPath = u.hostname.replace(/^www\./,'') + u.pathname;
+        const keepFull = KEEP_PATHS.some(p => fullPath.startsWith(p));
+        return keepFull ? url.trim() : (u.origin + '/');
+      } catch { return url.trim(); }
     }
 
-    // Remove angle brackets
-    url = url.replace(/^<|>$/g, '').trim();
+    function normalizeUrl(rawUrl) {
+      if (!rawUrl || typeof rawUrl !== 'string') return '';
+      let url = rawUrl.trim();
+      const mdMatch = url.match(/^\[.*?\]\((https?:\/\/[^)\s]+)\)$/);
+      if (mdMatch) url = mdMatch[1];
+      url = url.replace(/^<|>$/g, '').replace(/^["']|["']$/g, '').trim();
+      return url;
+    }
 
-    // Remove surrounding quotes
-    url = url.replace(/^[\"']|[\"']$/g, '').trim();
+    function sanitizeResources(resources) {
+      if (!Array.isArray(resources)) return [];
+      return resources
+        .filter(r => r && r.title)
+        .map(r => {
+          const normalized = safeUrl(normalizeUrl(r.url || ''));
+          const validTypes = ['documentation','course','tutorial','video','practice','book','github','other'];
+          return {
+            title:       r.title       || '',
+            url:         isValidUrl(normalized) ? normalized : '',
+            type:        validTypes.includes(r.type) ? r.type : 'other',
+            platform:    r.platform    || '',
+            isFree:      r.isFree !== false,
+            description: r.description || ''
+          };
+        })
+        .filter(r => r.title);
+    }
 
-    return url;
-  }
 
-  return resources
-    .filter(r => r && r.title)
-    .map(r => {
-      const normalizedUrl = normalizeUrl(r.url);
+    // ── Curated fallback resources — guaranteed working URLs per topic ───────────
+    const FALLBACK_RESOURCES = {
+      'python': [
+        { title:'Python Official Docs', url:'https://docs.python.org/3/', type:'documentation', platform:'Python.org', isFree:true, description:'Complete Python 3 reference' },
+        { title:'Real Python Tutorials', url:'https://realpython.com/', type:'tutorial', platform:'Real Python', isFree:true, description:'Practical Python tutorials for all levels' },
+        { title:'W3Schools Python', url:'https://www.w3schools.com/python/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Beginner-friendly Python with live examples' }
+      ],
+      'numpy': [
+        { title:'NumPy Documentation', url:'https://numpy.org/doc/', type:'documentation', platform:'NumPy', isFree:true, description:'Official NumPy guide and API reference' },
+        { title:'W3Schools NumPy', url:'https://www.w3schools.com/python/numpy/default.asp', type:'tutorial', platform:'W3Schools', isFree:true, description:'NumPy tutorial with examples' },
+        { title:'Kaggle Learn', url:'https://kaggle.com/learn', type:'course', platform:'Kaggle', isFree:true, description:'Free hands-on data science courses' }
+      ],
+      'pandas': [
+        { title:'Pandas Documentation', url:'https://pandas.pydata.org/docs/', type:'documentation', platform:'Pandas', isFree:true, description:'Complete Pandas API reference' },
+        { title:'W3Schools Pandas', url:'https://www.w3schools.com/python/pandas/default.asp', type:'tutorial', platform:'W3Schools', isFree:true, description:'Pandas tutorial with examples' },
+        { title:'Kaggle Pandas', url:'https://kaggle.com/learn', type:'course', platform:'Kaggle', isFree:true, description:'Free Pandas course by Kaggle' }
+      ],
+      'matplotlib': [
+        { title:'Matplotlib Documentation', url:'https://matplotlib.org/stable/', type:'documentation', platform:'Matplotlib', isFree:true, description:'Official Matplotlib documentation' },
+        { title:'W3Schools Matplotlib', url:'https://www.w3schools.com/python/matplotlib_intro.asp', type:'tutorial', platform:'W3Schools', isFree:true, description:'Matplotlib tutorial with examples' },
+        { title:'Real Python Matplotlib', url:'https://realpython.com/', type:'tutorial', platform:'Real Python', isFree:true, description:'Matplotlib plotting tutorials' }
+      ],
+      'machine learning': [
+        { title:'Scikit-learn Documentation', url:'https://scikit-learn.org/stable/', type:'documentation', platform:'Scikit-learn', isFree:true, description:'Official ML library documentation' },
+        { title:'Kaggle Intro to ML', url:'https://kaggle.com/learn', type:'course', platform:'Kaggle', isFree:true, description:'Free hands-on machine learning course' },
+        { title:'Google ML Crash Course', url:'https://developers.google.com/machine-learning/crash-course', type:'course', platform:'Google', isFree:true, description:'Fast-paced ML intro by Google' }
+      ],
+      'deep learning': [
+        { title:'TensorFlow Tutorials', url:'https://www.tensorflow.org/tutorials', type:'tutorial', platform:'TensorFlow', isFree:true, description:'Official TensorFlow deep learning tutorials' },
+        { title:'PyTorch Tutorials', url:'https://pytorch.org/tutorials/', type:'tutorial', platform:'PyTorch', isFree:true, description:'Official PyTorch tutorials' },
+        { title:'fast.ai Course', url:'https://fast.ai/', type:'course', platform:'fast.ai', isFree:true, description:'Free practical deep learning course' }
+      ],
+      'neural network': [
+        { title:'TensorFlow Tutorials', url:'https://www.tensorflow.org/tutorials', type:'tutorial', platform:'TensorFlow', isFree:true, description:'Neural networks with TensorFlow' },
+        { title:'PyTorch Tutorials', url:'https://pytorch.org/tutorials/', type:'tutorial', platform:'PyTorch', isFree:true, description:'Neural networks with PyTorch' },
+        { title:'fast.ai Course', url:'https://fast.ai/', type:'course', platform:'fast.ai', isFree:true, description:'Practical deep learning' }
+      ],
+      'tensorflow': [
+        { title:'TensorFlow API Docs', url:'https://www.tensorflow.org/api_docs', type:'documentation', platform:'TensorFlow', isFree:true, description:'Complete TensorFlow API reference' },
+        { title:'TensorFlow Tutorials', url:'https://www.tensorflow.org/tutorials', type:'tutorial', platform:'TensorFlow', isFree:true, description:'Official TensorFlow tutorials' },
+        { title:'Kaggle TensorFlow', url:'https://kaggle.com/learn', type:'course', platform:'Kaggle', isFree:true, description:'TensorFlow learning on Kaggle' }
+      ],
+      'pytorch': [
+        { title:'PyTorch Documentation', url:'https://pytorch.org/docs/stable/', type:'documentation', platform:'PyTorch', isFree:true, description:'Complete PyTorch API documentation' },
+        { title:'PyTorch Tutorials', url:'https://pytorch.org/tutorials/', type:'tutorial', platform:'PyTorch', isFree:true, description:'Official PyTorch tutorials' },
+        { title:'fast.ai Course', url:'https://fast.ai/', type:'course', platform:'fast.ai', isFree:true, description:'Practical deep learning with PyTorch' }
+      ],
+      'nlp': [
+        { title:'HuggingFace NLP Course', url:'https://huggingface.co/learn/nlp-course/', type:'course', platform:'HuggingFace', isFree:true, description:'Free NLP course using Transformers' },
+        { title:'HuggingFace Docs', url:'https://huggingface.co/docs', type:'documentation', platform:'HuggingFace', isFree:true, description:'Transformers documentation' },
+        { title:'Kaggle NLP', url:'https://kaggle.com/learn', type:'course', platform:'Kaggle', isFree:true, description:'Free NLP course on Kaggle' }
+      ],
+      'transformer': [
+        { title:'HuggingFace Docs', url:'https://huggingface.co/docs', type:'documentation', platform:'HuggingFace', isFree:true, description:'Transformers library documentation' },
+        { title:'HuggingFace NLP Course', url:'https://huggingface.co/learn/nlp-course/', type:'course', platform:'HuggingFace', isFree:true, description:'NLP with Transformers course' },
+        { title:'PyTorch Tutorials', url:'https://pytorch.org/tutorials/', type:'tutorial', platform:'PyTorch', isFree:true, description:'Transformers with PyTorch' }
+      ],
+      'javascript': [
+        { title:'MDN JavaScript Guide', url:'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide', type:'documentation', platform:'MDN', isFree:true, description:'Comprehensive JavaScript guide' },
+        { title:'JavaScript.info', url:'https://javascript.info/', type:'tutorial', platform:'JavaScript.info', isFree:true, description:'Modern JavaScript tutorial' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free JavaScript certification' }
+      ],
+      'html': [
+        { title:'MDN HTML Reference', url:'https://developer.mozilla.org/en-US/docs/Web/HTML', type:'documentation', platform:'MDN', isFree:true, description:'Complete HTML reference' },
+        { title:'W3Schools HTML', url:'https://www.w3schools.com/html/', type:'tutorial', platform:'W3Schools', isFree:true, description:'HTML tutorial with live examples' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free HTML certification' }
+      ],
+      'css': [
+        { title:'MDN CSS Reference', url:'https://developer.mozilla.org/en-US/docs/Web/CSS', type:'documentation', platform:'MDN', isFree:true, description:'Complete CSS reference' },
+        { title:'W3Schools CSS', url:'https://www.w3schools.com/css/', type:'tutorial', platform:'W3Schools', isFree:true, description:'CSS tutorial with examples' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free CSS certification' }
+      ],
+      'react': [
+        { title:'React Documentation', url:'https://react.dev/', type:'documentation', platform:'React', isFree:true, description:'Official React docs with examples' },
+        { title:'W3Schools React', url:'https://www.w3schools.com/react/', type:'tutorial', platform:'W3Schools', isFree:true, description:'React tutorial for beginners' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free React certification' }
+      ],
+      'vue': [
+        { title:'Vue.js Guide', url:'https://vuejs.org/guide/', type:'documentation', platform:'Vue.js', isFree:true, description:'Official Vue 3 guide' },
+        { title:'W3Schools Vue', url:'https://www.w3schools.com/vue/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Vue.js tutorial' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free frontend certification' }
+      ],
+      'node': [
+        { title:'Node.js Documentation', url:'https://nodejs.org/en/docs/', type:'documentation', platform:'Node.js', isFree:true, description:'Official Node.js API docs' },
+        { title:'W3Schools Node.js', url:'https://www.w3schools.com/nodejs/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Node.js tutorial' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free Node.js certification' }
+      ],
+      'express': [
+        { title:'Express.js Documentation', url:'https://expressjs.com/', type:'documentation', platform:'Express.js', isFree:true, description:'Official Express.js documentation' },
+        { title:'MDN Express Tutorial', url:'https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs', type:'tutorial', platform:'MDN', isFree:true, description:'Express.js server-side tutorial' },
+        { title:'W3Schools Node.js', url:'https://www.w3schools.com/nodejs/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Express included in Node tutorial' }
+      ],
+      'django': [
+        { title:'Django Documentation', url:'https://docs.djangoproject.com/', type:'documentation', platform:'Django', isFree:true, description:'Official Django documentation' },
+        { title:'W3Schools Django', url:'https://www.w3schools.com/django/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Django tutorial for beginners' },
+        { title:'Django Girls Tutorial', url:'https://tutorial.djangogirls.org/', type:'tutorial', platform:'Django Girls', isFree:true, description:'Free beginner Django tutorial' }
+      ],
+      'flask': [
+        { title:'Flask Documentation', url:'https://flask.palletsprojects.com/', type:'documentation', platform:'Flask', isFree:true, description:'Official Flask documentation' },
+        { title:'W3Schools Flask', url:'https://www.w3schools.com/python/python_flask.asp', type:'tutorial', platform:'W3Schools', isFree:true, description:'Flask tutorial with examples' },
+        { title:'Real Python Flask', url:'https://realpython.com/', type:'tutorial', platform:'Real Python', isFree:true, description:'Flask tutorials' }
+      ],
+      'fastapi': [
+        { title:'FastAPI Documentation', url:'https://fastapi.tiangolo.com/', type:'documentation', platform:'FastAPI', isFree:true, description:'Official FastAPI documentation' },
+        { title:'FastAPI Tutorial', url:'https://fastapi.tiangolo.com/', type:'tutorial', platform:'FastAPI', isFree:true, description:'FastAPI first steps tutorial' },
+        { title:'Real Python FastAPI', url:'https://realpython.com/', type:'tutorial', platform:'Real Python', isFree:true, description:'FastAPI guides' }
+      ],
+      'sql': [
+        { title:'W3Schools SQL', url:'https://www.w3schools.com/sql/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Complete SQL tutorial with exercises' },
+        { title:'SQLZoo', url:'https://sqlzoo.net/', type:'practice', platform:'SQLZoo', isFree:true, description:'Interactive SQL exercises online' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free SQL certification' }
+      ],
+      'mongodb': [
+        { title:'MongoDB Documentation', url:'https://www.mongodb.com/docs/', type:'documentation', platform:'MongoDB', isFree:true, description:'Official MongoDB documentation' },
+        { title:'MongoDB University', url:'https://learn.mongodb.com/', type:'course', platform:'MongoDB University', isFree:true, description:'Free official MongoDB courses' },
+        { title:'W3Schools MongoDB', url:'https://www.w3schools.com/mongodb/', type:'tutorial', platform:'W3Schools', isFree:true, description:'MongoDB tutorial' }
+      ],
+      'postgresql': [
+        { title:'PostgreSQL Documentation', url:'https://www.postgresql.org/docs/', type:'documentation', platform:'PostgreSQL', isFree:true, description:'Official PostgreSQL docs' },
+        { title:'W3Schools PostgreSQL', url:'https://www.w3schools.com/postgresql/', type:'tutorial', platform:'W3Schools', isFree:true, description:'PostgreSQL tutorial' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free database certification' }
+      ],
+      'redis': [
+        { title:'Redis Documentation', url:'https://redis.io/docs/', type:'documentation', platform:'Redis', isFree:true, description:'Official Redis docs and commands' },
+        { title:'Redis University', url:'https://university.redis.com/', type:'course', platform:'Redis University', isFree:true, description:'Free Redis courses' },
+        { title:'W3Schools Redis', url:'https://www.w3schools.com/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Redis tutorial' }
+      ],
+      'git': [
+        { title:'Git Documentation', url:'https://git-scm.com/doc', type:'documentation', platform:'Git', isFree:true, description:'Official Git reference manual' },
+        { title:'W3Schools Git', url:'https://www.w3schools.com/git/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Git tutorial from basics' },
+        { title:'GitHub', url:'https://github.com/', type:'practice', platform:'GitHub', isFree:true, description:'Practice Git with GitHub' }
+      ],
+      'docker': [
+        { title:'Docker Documentation', url:'https://docs.docker.com/', type:'documentation', platform:'Docker', isFree:true, description:'Complete Docker documentation' },
+        { title:'Docker Getting Started', url:'https://docs.docker.com/', type:'tutorial', platform:'Docker', isFree:true, description:'Official Docker tutorial' },
+        { title:'freeCodeCamp Docker', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free Docker tutorials' }
+      ],
+      'kubernetes': [
+        { title:'Kubernetes Documentation', url:'https://kubernetes.io/docs/', type:'documentation', platform:'Kubernetes', isFree:true, description:'Official Kubernetes docs' },
+        { title:'Kubernetes Tutorials', url:'https://kubernetes.io/docs/', type:'tutorial', platform:'Kubernetes', isFree:true, description:'Kubernetes basics tutorials' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free Kubernetes resources' }
+      ],
+      'cloud': [
+        { title:'AWS Getting Started', url:'https://aws.amazon.com/getting-started/', type:'tutorial', platform:'AWS', isFree:true, description:'Get started with AWS' },
+        { title:'Google Cloud Training', url:'https://cloud.google.com/training', type:'course', platform:'Google Cloud', isFree:true, description:'Free Google Cloud training' },
+        { title:'Microsoft Learn Azure', url:'https://learn.microsoft.com/en-us/azure/', type:'course', platform:'Microsoft', isFree:true, description:'Free Azure learning paths' }
+      ],
+      'aws': [
+        { title:'AWS Getting Started', url:'https://aws.amazon.com/getting-started/', type:'documentation', platform:'AWS', isFree:true, description:'Official AWS getting started' },
+        { title:'AWS Documentation', url:'https://docs.aws.amazon.com/', type:'documentation', platform:'AWS', isFree:true, description:'Complete AWS docs' },
+        { title:'freeCodeCamp AWS', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free AWS tutorials' }
+      ],
+      'solidity': [
+        { title:'Solidity Documentation', url:'https://docs.soliditylang.org/', type:'documentation', platform:'Solidity', isFree:true, description:'Official Solidity language docs' },
+        { title:'CryptoZombies', url:'https://cryptozombies.io/', type:'course', platform:'CryptoZombies', isFree:true, description:'Free interactive Solidity course' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free Solidity tutorials' }
+      ],
+      'ethereum': [
+        { title:'Ethereum Developer Docs', url:'https://ethereum.org/en/developers/docs/', type:'documentation', platform:'Ethereum.org', isFree:true, description:'Official Ethereum developer docs' },
+        { title:'Ethereum Learn', url:'https://ethereum.org/en/learn/', type:'tutorial', platform:'Ethereum.org', isFree:true, description:'Learn Ethereum fundamentals' },
+        { title:'CryptoZombies', url:'https://cryptozombies.io/', type:'course', platform:'CryptoZombies', isFree:true, description:'Interactive blockchain course' }
+      ],
+      'web3': [
+        { title:'Ethereum Developer Docs', url:'https://ethereum.org/en/developers/docs/', type:'documentation', platform:'Ethereum.org', isFree:true, description:'Official Web3 and Ethereum docs' },
+        { title:'Web3.js Docs', url:'https://web3js.readthedocs.io/', type:'documentation', platform:'Web3.js', isFree:true, description:'Official Web3.js documentation' },
+        { title:'CryptoZombies', url:'https://cryptozombies.io/', type:'course', platform:'CryptoZombies', isFree:true, description:'Learn Web3 interactively' }
+      ],
+      'ethers': [
+        { title:'Ethers.js Documentation', url:'https://docs.ethers.org/', type:'documentation', platform:'Ethers.js', isFree:true, description:'Official Ethers.js documentation' },
+        { title:'Ethereum Developer Docs', url:'https://ethereum.org/en/developers/docs/', type:'documentation', platform:'Ethereum.org', isFree:true, description:'Ethereum developer documentation' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free Ethers.js tutorials' }
+      ],
+      'hardhat': [
+        { title:'Hardhat Documentation', url:'https://hardhat.org/tutorial', type:'documentation', platform:'Hardhat', isFree:true, description:'Official Hardhat development environment docs' },
+        { title:'Hardhat Tutorial', url:'https://hardhat.org/tutorial', type:'tutorial', platform:'Hardhat', isFree:true, description:'Official Hardhat getting started tutorial' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Hardhat and blockchain tutorials' }
+      ],
+      'blockchain': [
+        { title:'Ethereum Developer Docs', url:'https://ethereum.org/en/developers/docs/', type:'documentation', platform:'Ethereum.org', isFree:true, description:'Official Ethereum blockchain docs' },
+        { title:'CryptoZombies', url:'https://cryptozombies.io/', type:'course', platform:'CryptoZombies', isFree:true, description:'Free interactive blockchain course' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free blockchain tutorials' }
+      ],
+      'smart contract': [
+        { title:'Solidity Documentation', url:'https://docs.soliditylang.org/', type:'documentation', platform:'Solidity', isFree:true, description:'Official Solidity smart contract docs' },
+        { title:'OpenZeppelin Docs', url:'https://docs.openzeppelin.com/', type:'documentation', platform:'OpenZeppelin', isFree:true, description:'Secure smart contract library' },
+        { title:'CryptoZombies', url:'https://cryptozombies.io/', type:'course', platform:'CryptoZombies', isFree:true, description:'Build smart contracts interactively' }
+      ],
+      'openzeppelin': [
+        { title:'OpenZeppelin Documentation', url:'https://docs.openzeppelin.com/', type:'documentation', platform:'OpenZeppelin', isFree:true, description:'Official OpenZeppelin docs' },
+        { title:'Solidity Documentation', url:'https://docs.soliditylang.org/', type:'documentation', platform:'Solidity', isFree:true, description:'Solidity language docs' },
+        { title:'Ethereum Developer Docs', url:'https://ethereum.org/en/developers/docs/', type:'documentation', platform:'Ethereum.org', isFree:true, description:'Ethereum developer docs' }
+      ],
+      'jest': [
+        { title:'Jest Documentation', url:'https://jestjs.io/docs/getting-started', type:'documentation', platform:'Jest', isFree:true, description:'Official Jest testing framework docs' },
+        { title:'Jest Getting Started', url:'https://jestjs.io/docs/getting-started', type:'tutorial', platform:'Jest', isFree:true, description:'Getting started with Jest testing' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free JavaScript testing tutorials' }
+      ],
+      'testing': [
+        { title:'Jest Documentation', url:'https://jestjs.io/docs/getting-started', type:'documentation', platform:'Jest', isFree:true, description:'Official Jest testing docs' },
+        { title:'MDN Testing Guide', url:'https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing', type:'documentation', platform:'MDN', isFree:true, description:'Testing tools and practices' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free testing tutorials' }
+      ],
+      'mocha': [
+        { title:'Mocha Documentation', url:'https://mochajs.org/', type:'documentation', platform:'Mocha', isFree:true, description:'Official Mocha test framework docs' },
+        { title:'Jest Documentation', url:'https://jestjs.io/docs/getting-started', type:'documentation', platform:'Jest', isFree:true, description:'Jest as alternative to Mocha' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free JS testing courses' }
+      ],
+      'supertest': [
+        { title:'Jest Documentation', url:'https://jestjs.io/docs/getting-started', type:'documentation', platform:'Jest', isFree:true, description:'Jest for API testing with Supertest' },
+        { title:'Express.js Documentation', url:'https://expressjs.com/', type:'documentation', platform:'Express.js', isFree:true, description:'Express.js for API development' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'tutorial', platform:'freeCodeCamp', isFree:true, description:'Free API testing tutorials' }
+      ],
+      'rate limit': [
+        { title:'Express.js Documentation', url:'https://expressjs.com/', type:'documentation', platform:'Express.js', isFree:true, description:'Express.js middleware docs' },
+        { title:'npm express-rate-limit', url:'https://www.npmjs.com/package/express-rate-limit', type:'documentation', platform:'npm', isFree:true, description:'Rate limiting middleware for Express' },
+        { title:'OWASP Security', url:'https://owasp.org/', type:'documentation', platform:'OWASP', isFree:true, description:'API security best practices' }
+      ],
+      'npm': [
+        { title:'npm Documentation', url:'https://docs.npmjs.com/', type:'documentation', platform:'npm', isFree:true, description:'Official npm documentation' },
+        { title:'Node.js Documentation', url:'https://nodejs.org/en/docs/', type:'documentation', platform:'Node.js', isFree:true, description:'Node.js and npm docs' },
+        { title:'W3Schools Node.js', url:'https://www.w3schools.com/nodejs/', type:'tutorial', platform:'W3Schools', isFree:true, description:'npm tutorial' }
+      ],
+      'data structures': [
+        { title:'W3Schools DSA', url:'https://www.w3schools.com/dsa/', type:'tutorial', platform:'W3Schools', isFree:true, description:'DSA tutorial with examples' },
+        { title:'LeetCode', url:'https://leetcode.com/', type:'practice', platform:'LeetCode', isFree:true, description:'Practice data structure problems' },
+        { title:'HackerRank', url:'https://www.hackerrank.com/', type:'practice', platform:'HackerRank', isFree:true, description:'Data structures challenges' }
+      ],
+      'algorithms': [
+        { title:'W3Schools DSA', url:'https://www.w3schools.com/dsa/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Algorithms tutorial' },
+        { title:'LeetCode', url:'https://leetcode.com/', type:'practice', platform:'LeetCode', isFree:true, description:'Algorithm practice problems' },
+        { title:'HackerRank', url:'https://www.hackerrank.com/', type:'practice', platform:'HackerRank', isFree:true, description:'Algorithm challenges' }
+      ],
+      'statistics': [
+        { title:'W3Schools Statistics', url:'https://www.w3schools.com/statistics/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Statistics tutorial with examples' },
+        { title:'Khan Academy Statistics', url:'https://www.khanacademy.org/math/statistics-probability', type:'course', platform:'Khan Academy', isFree:true, description:'Free statistics course' },
+        { title:'Kaggle', url:'https://kaggle.com/learn', type:'course', platform:'Kaggle', isFree:true, description:'Data science on Kaggle' }
+      ],
+      'linear algebra': [
+        { title:'Khan Academy Linear Algebra', url:'https://www.khanacademy.org/math/linear-algebra', type:'course', platform:'Khan Academy', isFree:true, description:'Free linear algebra course' },
+        { title:'NumPy Linalg Reference', url:'https://numpy.org/doc/stable/reference/routines.linalg.html', type:'documentation', platform:'NumPy', isFree:true, description:'NumPy linear algebra functions' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Math for programming' }
+      ],
+      'calculus': [
+        { title:'Khan Academy Calculus', url:'https://www.khanacademy.org/math/calculus-1', type:'course', platform:'Khan Academy', isFree:true, description:'Free calculus course' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Math for developers' },
+        { title:'W3Schools', url:'https://www.w3schools.com/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Mathematics tutorials' }
+      ],
+      'security': [
+        { title:'OWASP', url:'https://owasp.org/', type:'documentation', platform:'OWASP', isFree:true, description:'Web application security resources' },
+        { title:'MDN Web Security', url:'https://developer.mozilla.org/en-US/docs/Web/Security', type:'documentation', platform:'MDN', isFree:true, description:'Web security concepts' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free security tutorials' }
+      ],
+      'api': [
+        { title:'MDN HTTP Documentation', url:'https://developer.mozilla.org/en-US/docs/Web/HTTP', type:'documentation', platform:'MDN', isFree:true, description:'HTTP and API documentation' },
+        { title:'Postman Learning', url:'https://learning.postman.com/', type:'tutorial', platform:'Postman', isFree:true, description:'Free API testing tutorials' },
+        { title:'Swagger Docs', url:'https://swagger.io/docs/', type:'documentation', platform:'Swagger', isFree:true, description:'API design with OpenAPI/Swagger' }
+      ],
+      'graphql': [
+        { title:'GraphQL Documentation', url:'https://graphql.org/learn/', type:'documentation', platform:'GraphQL', isFree:true, description:'Official GraphQL docs' },
+        { title:'Apollo Documentation', url:'https://www.apollographql.com/docs/', type:'documentation', platform:'Apollo', isFree:true, description:'Apollo GraphQL client docs' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free GraphQL tutorials' }
+      ],
+      'authentication': [
+        { title:'JWT.io', url:'https://jwt.io/', type:'documentation', platform:'JWT.io', isFree:true, description:'JSON Web Token docs and debugger' },
+        { title:'MDN Auth Guide', url:'https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API', type:'documentation', platform:'MDN', isFree:true, description:'Web authentication API' },
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free auth tutorials' }
+      ],
+      'default': [
+        { title:'freeCodeCamp', url:'https://www.freecodecamp.org/', type:'course', platform:'freeCodeCamp', isFree:true, description:'Free full-stack development courses' },
+        { title:'MDN Web Docs', url:'https://developer.mozilla.org/en-US/docs/Learn', type:'documentation', platform:'MDN', isFree:true, description:'Comprehensive web development guide' },
+        { title:'W3Schools', url:'https://www.w3schools.com/', type:'tutorial', platform:'W3Schools', isFree:true, description:'Easy-to-follow web tutorials' }
+      ]
+    };
 
-      return {
-        title: r.title || '',
-        url: isValidUrl(normalizedUrl) ? normalizedUrl : '',
-        type: [
-          'documentation',
-          'course',
-          'tutorial',
-          'video',
-          'practice',
-          'book',
-          'github',
-          'other'
-        ].includes(r.type)
-          ? r.type
-          : 'other',
-        platform: r.platform || '',
-        isFree: r.isFree !== false,
-        description: r.description || ''
-      };
-    });
-}
+    function getFallbackResources(topicTitle) {
+      const t = (topicTitle || '').toLowerCase();
+      for (const [key, resources] of Object.entries(FALLBACK_RESOURCES)) {
+        if (key !== 'default' && t.includes(key)) return resources;
+      }
+      return FALLBACK_RESOURCES['default'];
+    }
+
+    function ensureResources(resources, topicTitle) {
+      const valid = (resources || []).filter(r => r.url && isValidUrl(r.url));
+      if (valid.length >= 2) return valid;
+      const fallbacks = getFallbackResources(topicTitle);
+      const combined = [...valid];
+      for (const fb of fallbacks) {
+        if (combined.length >= 3) break;
+        if (!combined.some(r => r.url === fb.url)) combined.push(fb);
+      }
+      return combined;
+    }
+
 
     // Normalize phases
     parsed.phases = parsed.phases.map((phase, pi) => {
@@ -1186,7 +1476,7 @@ IMPORTANT RULES:
           difficulty:         ['Beginner','Intermediate','Advanced'].includes(topic.difficulty) ? topic.difficulty : 'Beginner',
           estimatedHours:     topic.estimatedHours     || 1,
           learningObjectives: Array.isArray(topic.learningObjectives) ? topic.learningObjectives : [],
-          resources:          sanitizeResources(topic.resources),
+          resources:          ensureResources(sanitizeResources(topic.resources), topic.title),
           exercises:          Array.isArray(topic.exercises) ? topic.exercises : [],
           completed:          false,
           completedAt:        null,
